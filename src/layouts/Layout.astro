@@ -1,7 +1,15 @@
 ---
+import * as Icon from '@astropub/icons'
 interface Props {
 	title: string;
+	description?: string;
 }
+import '@fontsource/roboto/100-italic.css';
+import '@fontsource/roboto/300-italic.css';
+import '@fontsource/roboto/400-italic.css';
+import '@fontsource/roboto/500-italic.css';
+import '@fontsource/roboto/700-italic.css';
+import '@fontsource/roboto/900-italic.css';
 import '@fontsource/roboto/100.css';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -9,20 +17,57 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import '@fontsource/roboto/900.css';
 
-const { title } = Astro.props;
+const { title } = Astro.props || {title: 'Nicholas Charriere'};
+const { description } = Astro.props || {description: 'The personal website of Nicholas Charriere.'};
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content="Astro description" />
+		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+		<meta name="keywords" content="Nicholas Charriere,Axflow,founder,personal page nicholas charriere,programmer AI">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta property="og:title" content={title}>
+		<meta property="og:description" content={description}>
+		<meta property="og:url" content="https://nicholascharriere.com/">
+		<meta property="og:site_name" content="Nicholas Charriere">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:image" content="http://localhost:3000/nicholas2.jpg">
+		<meta property="og:type" content="website">
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:creator" content="@nichochar">
+		<meta name="twitter:title" content={title}>
+		<meta name="twitter:description" content={description}>
+		<meta name="twitter:image" content="https://nicholascharriere.com/nicholas2.jpg"><link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="any">
+		<meta name="next-size-adjust">
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
 	<body class="bg-bg text-text-500">
-		<slot />
+
+    <div class="flex flex-col min-h-screen">
+      <header class="h-10 flex justify-end mx-6">
+        <div class="flex justify-end gap-4 items-center">
+          <a href="https://github.com/nichochar">
+            <Icon.GitHubLogo size="15" class="hover:text-froly-500 transition-all"/>
+          </a>
+          <a href="https://warpcast.com/pushix">
+            <Icon.GitHubLogo size="15" class="p-[1px] hover:text-froly-500 transition-all"/>
+          </a>
+          <a href="https://www.linkedin.com/in/nicholas-charriere/">
+            <Icon.FramerLogo size="15" class="hover:text-froly-500 transition-all"/>
+          </a>
+          <a href="https://twitter.com/nichochar">
+            <Icon.TwitterLogo size="15" class="hover:text-froly-500 transition-all"/>
+          </a>
+        </div>
+      </header>
+      <div class="px-4">
+        <slot />
+      </div>
+    </div>
 	</body>
 </html>
