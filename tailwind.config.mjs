@@ -2,11 +2,12 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 export default {
-	content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+  content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
   theme: {
     extend: {
       fontFamily: {
         sans: ["Roboto", "InterVariable", ...defaultTheme.fontFamily.sans],
+        mono: ["Source Code Pro Variable", ...defaultTheme.fontFamily.mono],
       },
       colors: {
         bg: "#F5E9D4",
@@ -40,5 +41,5 @@ export default {
       },
     },
   },
-	plugins: [],
-}
+  plugins: [],
+};

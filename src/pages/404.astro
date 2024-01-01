@@ -1,0 +1,25 @@
+---
+import Layout from "../layouts/Layout.astro";
+import * as Icon from "@astropub/icons";
+// Can i do better here?
+
+var pathname = new URL(Astro.request.url).pathname;
+---
+
+<Layout title="Not found | Nicholas Charriere">
+  <main class="container max-w-xl mx-auto text-center">
+    <a
+      class="absolute top-4 left-4 mb-10 flex gap-2 items-center no-underline font-thin"
+      href="/"
+    >
+      <Icon.Home size="15" />
+    </a>
+    <h1 class="text-4xl mt-4 font-bold">404</h1>
+    <div
+      class="font-mono rounded-xl my-4 px-2 py-0.5 border border-text-300 w-fit mx-auto"
+    >
+      {pathname}
+    </div>
+    <p class="max-w-xl pt-1">This is not the url you're looking for.</p>
+  </main>
+</Layout>
