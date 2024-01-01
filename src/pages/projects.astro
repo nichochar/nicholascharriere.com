@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro';
+import * as Icon from '@astropub/icons'
+// Can i do better here?
+---
+
+<Layout title="Project | Nicholas Charriere">
+
+    <main class="container max-w-xl mx-auto">
+      <a class="absolute top-4 left-4 mb-10 opacity-50 flex gap-2 items-center no-underline font-thin" href="/">
+        <Icon.Home size="15"/>
+      </a>
+      <h1 class="text-4xl mt-4 font-bold">Projects</h1>
+
+      <div class="flex flex-col">
+        <a href="https://axflow.dev" class="hover:text-froly-500 transition-all duration-300">
+          <h2 class="text-xl font-medium pt-6">Axflow</h2>
+        </a>
+        <p class="max-w-xl pt-1">
+          Currendly building this company. Our mission is to help product teams ship AI products faster. We build tools that cover the entire AI production lifecycle.
+        </p>
+        <a href="https://github.com/nichochar" class="hover:text-froly-500 transition-all duration-300">
+          <h2 class="text-xl font-medium pt-6">Open source</h2>
+        </a>
+        <p class="max-w-xl pt-1">
+          I have contributed to many open source projects. I maintained
+          pymemcache and snappass during my tenure at Pinterest. All my
+          contributions are on GitHub.
+        </p>
+        <a
+          href="https://blockchainsmokers.xyz"
+          class="hover:text-froly-500 transition-all duration-300"
+        >
+          <h2 class="text-xl font-medium pt-6">Blockchainsmokers</h2>
+        </a>
+        <p class="max-w-xl pt-1">
+          I was curious about how blockchain technology worked, so I built an
+          NFT collection to learn more about it. Art and code were all from me.
+        </p>
+        <a href="https://avostories.com" class="hover:text-froly-500 transition-all duration-300">
+          <h2 class="text-xl font-medium pt-6">Avostories</h2>
+        </a>
+        <p class="max-w-xl pt-1">
+          Write for 5 minutes, every day. I built this app to help my wife (and
+          other creative writers) develop a daily habit.
+        </p>
+        <a href="https://bytesizetheories.com" class="hover:text-froly-500 transition-all duration-300">
+          <h2 class="text-xl font-medium pt-6">Byte Size Theories</h2>
+        </a>
+        <p class="max-w-xl pt-1">
+          A blog focused on small bites of knowledge in software & startups.
+        </p>
+        <a
+          href="https://paragraph.xyz/@nichochar"
+          class="hover:text-froly-500 transition-all duration-300"
+        >
+          <h2 class="text-xl font-medium pt-6">Web3 in 420</h2>
+        </a>
+        <p class="max-w-xl pt-1">
+          Another blog, focused on digestible explanations of web3 concepts.
+        </p>
+      </div>
+    </main>
+</Layout>
