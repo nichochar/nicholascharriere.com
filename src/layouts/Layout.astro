@@ -1,5 +1,7 @@
 ---
 import * as Icon from '@astropub/icons'
+import FarcasterIcon from '../components/FarcasterIcon.astro'
+import LinkedInIcon from '../components/LinkedInIcon.astro'
 interface Props {
 	title: string;
 	description?: string;
@@ -55,10 +57,10 @@ const { description } = Astro.props || {description: 'The personal website of Ni
             <Icon.GitHubLogo size="15" class="hover:text-froly-500 transition-all"/>
           </a>
           <a href="https://warpcast.com/pushix">
-            <Icon.GitHubLogo size="15" class="p-[1px] hover:text-froly-500 transition-all"/>
+            <FarcasterIcon className="p-[1px] hover:text-froly-500 transition-all"/>
           </a>
           <a href="https://www.linkedin.com/in/nicholas-charriere/">
-            <Icon.FramerLogo size="15" class="hover:text-froly-500 transition-all"/>
+            <LinkedInIcon className="hover:text-froly-500 transition-all"/>
           </a>
           <a href="https://twitter.com/nichochar">
             <Icon.TwitterLogo size="15" class="hover:text-froly-500 transition-all"/>
