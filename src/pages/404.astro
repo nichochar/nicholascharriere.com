@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import * as Icon from "@astropub/icons";
 // Can i do better here?
 
+const blob = Math.floor(Math.random() * 3) + 1;
 var pathname = new URL(Astro.request.url).pathname;
 ---
 
@@ -15,6 +16,7 @@ var pathname = new URL(Astro.request.url).pathname;
       <Icon.Home size="15" />
     </a>
     <h1 class="text-4xl mt-4 font-bold">404</h1>
+    <img src=`/blob${blob}.png` alt="404" class="w-1/2 mx-auto opacity-70" />
     <div
       class="font-mono rounded-xl my-4 px-2 py-0.5 border border-text-300 w-fit mx-auto"
     >
