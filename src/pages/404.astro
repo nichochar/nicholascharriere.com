@@ -7,7 +7,7 @@ const blob = Math.floor(Math.random() * 3) + 1;
 var pathname = new URL(Astro.request.url).pathname;
 ---
 
-<Layout title="Not found | Nicholas Charriere">
+<Layout title="Not found | Nicholas Charriere" showHome={true}>
   <main class="container max-w-xl mx-auto text-center">
     <a
       class="absolute top-4 left-4 mb-10 flex gap-2 items-center no-underline font-thin"
