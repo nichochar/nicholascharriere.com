@@ -1,0 +1,76 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const quotes = [
+  {
+    quote: "Strive not to be a success, but rather to be of value.",
+    source: "Albert Einstein",
+  },
+  {
+    quote: "The best way to predict the future is to invent it.",
+    source: "Abraham Lincoln",
+  },
+  {
+    quote: "Focusing is about saying no.",
+    source: "Steve Jobs",
+  },
+  {
+    quote:
+      "When the enemy is making a false movement we must take good care not to interrupt him.",
+    source: "Napoleon",
+  },
+  {
+    quote: "Don't fear moving slowly. Fear standing still.",
+    source: "Chinese Proverb",
+  },
+  {
+    quote:
+      "When the winds of change blow, some people build walls and others build windmills.",
+    source: "Chinese Proverb",
+  },
+  {
+    quote:
+      "There is nothing noble in being superior to your fellow man; true nobility is being superior to your former self.",
+    source: "Ernest Hemingway",
+  },
+  {
+    quote:
+      "If you love life, don't waste time, for time is what life is made up of.",
+    source: "Bruce Lee",
+  },
+  {
+    quote:
+      "Premature optimization is the root of all evil (or at least most of it) in programming.",
+    source: "Donald Knuth",
+  },
+  {
+    quote: "However little television you watch, watch less.",
+    source: "David McCullough",
+  },
+  {
+    quote:
+      "I think a life properly lived is just learn, learn, learn all the time.",
+    source: "Charlie Munger",
+  },
+  {
+    quote: "Simple, correct, fast. In that order.",
+    source: "Drew DeVault",
+  },
+];
+---
+
+<Layout title="Favorite quotes | Nicholas Charriere" showHome={true}>
+  <h1 class="text-4xl mt-4 font-bold">Favorite quotes</h1>
+  <div class="flex flex-col divide-y divide-bg-accent">
+    {
+      quotes.map((quote) => (
+        <div class="py-6">
+          <blockquote class="py-1 my-1">
+            <p class="px-2">"{quote.quote}"</p>
+          </blockquote>
+          <p class="font-light">— {quote.source}</p>
+        </div>
+      ))
+    }
+  </div>
+</Layout>

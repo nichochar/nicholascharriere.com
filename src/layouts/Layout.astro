@@ -6,6 +6,7 @@ import LinkedInIcon from "../components/LinkedInIcon.astro";
 interface Props {
   title: string;
   description?: string;
+  showHome: boolean;
 }
 import "@fontsource/roboto/100-italic.css";
 import "@fontsource/roboto/300-italic.css";
@@ -22,7 +23,7 @@ import "@fontsource/roboto/900.css";
 import "@fontsource-variable/source-code-pro";
 import "@fontsource-variable/source-code-pro/wght-italic.css";
 
-const { title } = Astro.props || { title: "Nicholas Charriere" };
+const { title, showHome } = Astro.props || { title: "Nicholas Charriere" };
 const { description } = Astro.props || {
   description: "The personal website of Nicholas Charriere.",
 };
@@ -67,7 +68,19 @@ const { description } = Astro.props || {
   </head>
   <body class="bg-bg text-text-500">
     <div class="flex flex-col min-h-screen">
-      <header class="h-10 flex justify-end mx-6">
+      <header
+        class="h-10 flex justify-end container max-w-xl mx-auto px-4 relative"
+      >
+        {
+          showHome && (
+            <a
+              class="absolute top-4 left-4 mb-10 opacity-60 flex gap-2 items-center no-underline font-thin hover:text-froly-500 transition-all"
+              href="/"
+            >
+              <Icon.Home size="15" />
+            </a>
+          )
+        }
         <div class="flex justify-end gap-4 items-center">
           <a href="https://github.com/nichochar">
             <Icon.GitHubLogo
@@ -91,9 +104,10 @@ const { description } = Astro.props || {
           </a>
         </div>
       </header>
-      <div class="px-4">
+
+      <main class="container max-w-xl mx-auto px-4">
         <slot />
-      </div>
+      </main>
     </div>
   </body>
 </html>

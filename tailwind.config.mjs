@@ -11,6 +11,7 @@ export default {
       },
       colors: {
         bg: "#F5E9D4",
+        "bg-accent": "#f1dfc1",
         medium: "#B79C94",
         text: {
           50: "#f7f7f6",
