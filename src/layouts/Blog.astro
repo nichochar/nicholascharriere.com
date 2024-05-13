@@ -3,8 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import Prose from "../components/Prose.astro";
 import { getEntry } from "astro:content";
 
-const entry = await getEntry("collection", "entry");
-const { Content } = await entry.render();
+const entry = await getEntry("blog", "entry");
+const { Content } = await entry!.render();
 ---
 
 <Layout title="Blog stuff" showHome={true}>
