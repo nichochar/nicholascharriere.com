@@ -1,0 +1,57 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+const allBlogPosts = await getCollection("blog", ({ data }) => {
+  return data.published;
+});
+
+export const humanTime = (date: Date) => {
+  return date.toLocaleString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+---
+
+<Layout title="Blog" showHome={true}>
+  <h1 class="text-4xl mt-4 mb-6 font-bold">Blog</h1>
+
+  <div class="flex flex-col gap-12 w-full pb-20">
+    {
+      allBlogPosts
+        .filter((post) => post.data.published)
+        .sort((a, b) =>
+          a.data.published === undefined || b.data.published === undefined
+            ? 0
+            : a.data.published < b.data.published
+              ? 1
+              : -1,
+        )
+        .map(
+          (post) =>
+            post.data.published && (
+              <a href={`/blog/${post.slug}`}>
+                <article class="">
+                  <div class="flex items-center gap-4 text-xs flex-wrap">
+                    <time
+                      datetime={post.data.published.toISOString()}
+                      class="text-gray-500"
+                    >
+                      {humanTime(post.data.published)}
+                    </time>
+                  </div>
+                  <div class="group relative hover:opacity-80">
+                    <h3 class="text-xl font-semibold leading-6">
+                      <span class="absolute inset-0" />
+                      {post.data.title}
+                    </h3>
+                  </div>
+                </article>
+              </a>
+            ),
+        )
+    }
+  </div>
+</Layout>

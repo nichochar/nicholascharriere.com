@@ -1,8 +1,11 @@
 /** @type {import('tailwindcss').Config} */
+import Typography from "@tailwindcss/typography";
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 export default {
+  darkMode: "class",
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
+  plugins: [Typography],
   theme: {
     extend: {
       fontFamily: {
@@ -42,5 +45,4 @@ export default {
       },
     },
   },
-  plugins: [],
 };

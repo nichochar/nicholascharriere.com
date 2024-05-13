@@ -1,0 +1,10 @@
+---
+import Layout from "./Layout.astro";
+import Prose from "../components/Prose.astro";
+---
+
+<Layout title={"Blog"} showHome={true}>
+  <Prose>
+    <slot />
+  </Prose>
+</Layout>
