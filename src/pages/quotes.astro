@@ -60,12 +60,17 @@ const quotes = [
     quote: "Ask for feedback on your attempts, not advice on your ideas.",
     source: "Anonymous",
   },
+  {
+    quote:
+      "The pessimist complains about the wind. The optimist expects it to change. The leader adjusts the sails.",
+    source: "John Maxwell",
+  },
 ];
 ---
 
 <Layout title="Favorite quotes | Nicholas Charriere" showHome={true}>
   <h1 class="text-4xl mt-4 font-bold">Favorite quotes</h1>
-  <div class="flex flex-col divide-y divide-bg-accent">
+  <div class="flex flex-col divide-y divide-bg-accent mb-40">
     {
       quotes.map((quote) => (
         <div class="py-6">
