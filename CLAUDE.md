@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-This is a personal website built with Astro 4, using Tailwind CSS for styling and MDX for blog content.
+This is a personal website for Nicholas Charriere, CEO of Mocha (built by him)(built with Astro 4, using Tailwind CSS for styling and MDX for blog content.
 
 ### Key Structure
 
