@@ -1,0 +1,52 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const articles = [
+  {
+    title: "How to fix your entire life in 1 day",
+    url: "https://x.com/thedankoe/status/2010751592346030461",
+    source: "Dan Koe",
+  },
+  {
+    title: "Maker's Schedule, Manager's Schedule",
+    url: "https://paulgraham.com/makersschedule.html",
+    source: "Paul Graham",
+  },
+  {
+    title: "How to Do Great Work",
+    url: "https://paulgraham.com/greatwork.html",
+    source: "Paul Graham",
+  },
+  {
+    title: "Advice",
+    url: "https://patrickcollison.com/advice",
+    source: "Patrick Collison",
+  },
+  {
+    title: "Fast",
+    url: "https://patrickcollison.com/fast",
+    source: "Patrick Collison",
+  },
+];
+---
+
+<Layout title="Reading list | Nicholas Charriere" showHome={true}>
+  <h1 class="text-4xl mt-4 font-bold">Reading list</h1>
+  <div class="flex flex-col divide-y divide-bg-accent mb-40">
+    {
+      articles.map((article) => (
+        <div class="py-6">
+          <a
+            href={article.url}
+            class="text-text-700 font-medium underline hover:text-froly-500 transition-all duration-200 hover:no-underline underline-offset-2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {article.title}
+          </a>
+          <p class="font-light text-sm mt-1"> — {article.source}</p>
+        </div>
+      ))
+    }
+  </div>
+</Layout>

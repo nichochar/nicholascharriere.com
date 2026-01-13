@@ -1,0 +1,52 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const videos = [
+  {
+    title: "The difference between a great idea and a great product",
+    url: "https://www.youtube.com/watch?v=sm1msysj5lw",
+    source: "Steve Jobs",
+  },
+  {
+    title: "Mastering the tamagoyaki",
+    url: "https://www.youtube.com/watch?v=vFP5xD2l3ro",
+    source: "Jiro Dreams of Sushi",
+  },
+  {
+    title: "Best programming setup and IDE",
+    url: "https://www.youtube.com/watch?v=tzr7hRXcwkw",
+    source: "John Carmack",
+  },
+  {
+    title: "A conversation with Jony Ive",
+    url: "https://www.youtube.com/watch?v=wLb9g_8r-mE",
+    source: "Stripe Sessions 2025",
+  },
+  {
+    title: "Inventing on Principle",
+    url: "https://www.youtube.com/watch?v=PUv66718DII",
+    source: "Bret Victor",
+  },
+];
+---
+
+<Layout title="Worth watching | Nicholas Charriere" showHome={true}>
+  <h1 class="text-4xl mt-4 font-bold">Worth watching</h1>
+  <div class="flex flex-col divide-y divide-bg-accent mb-40">
+    {
+      videos.map((video) => (
+        <div class="py-6">
+          <a
+            href={video.url}
+            class="text-text-700 font-medium underline hover:text-froly-500 transition-all duration-200 hover:no-underline underline-offset-2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {video.title}
+          </a>
+          <p class="font-light text-sm mt-1"> — {video.source}</p>
+        </div>
+      ))
+    }
+  </div>
+</Layout>
