@@ -1,8 +1,8 @@
 ---
 import { ViewTransitions } from "astro:transitions";
 import * as Icon from "@astropub/icons";
-import FarcasterIcon from "../components/FarcasterIcon.astro";
 import LinkedInIcon from "../components/LinkedInIcon.astro";
+import XIcon from "../components/XIcon.astro";
 interface Props {
   title: string;
   description?: string;
@@ -89,19 +89,11 @@ const { description } = Astro.props || {
               class="hover:text-froly-500 transition-all"
             />
           </a>
-          <a href="https://warpcast.com/pushix">
-            <FarcasterIcon
-              className="p-[1px] hover:text-froly-500 transition-all"
-            />
-          </a>
           <a href="https://www.linkedin.com/in/nicholas-charriere/">
             <LinkedInIcon className="hover:text-froly-500 transition-all" />
           </a>
-          <a href="https://twitter.com/nichochar">
-            <Icon.TwitterLogo
-              size="15"
-              class="hover:text-froly-500 transition-all"
-            />
+          <a href="https://x.com/nichochar">
+            <XIcon className="hover:text-froly-500 transition-all" />
           </a>
         </div>
       </header>
