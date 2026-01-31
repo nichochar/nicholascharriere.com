@@ -29,3 +29,15 @@ Custom Tailwind theme in `tailwind.config.mjs`:
 - **New quote**: Add object to the `quotes` array in `src/pages/quotes.astro`
 - **New blog post**: Create MDX file in `src/content/blog/` with frontmatter: `title`, `tags`, `published` (date)
 - **New font**: Install via fontsource (`npm install @fontsource/font-name`), import in Layout.astro
+
+## Deployment
+
+The site is hosted on a Digital Ocean droplet. Nginx serves the static files from the `dist/` directory (not a reverse proxy since there's no backend server—just static file serving).
+
+To deploy:
+1. Push changes to `main`
+2. SSH into the server: `ssh do`
+3. `cd nicholascharriere.com`
+4. `npm run build`
+
+The build outputs to `dist/`, which nginx is configured to serve.
