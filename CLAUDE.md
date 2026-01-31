@@ -36,8 +36,10 @@ The site is hosted on a Digital Ocean droplet. Nginx serves the static files fro
 
 To deploy:
 1. Push changes to `main`
-2. SSH into the server: `ssh do`
-3. `cd nicholascharriere.com`
-4. `npm run build`
+2. Run: `ssh do "source ~/.zshrc && cd nicholascharriere.com && git pull && npm run build"`
+
+Or manually:
+1. `ssh do`
+2. `cd nicholascharriere.com && git pull && npm run build`
 
 The build outputs to `dist/`, which nginx is configured to serve.
