@@ -28,25 +28,54 @@ const articles = [
     source: "Patrick Collison",
   },
 ];
+
+const books = [
+  { title: "Anathem", author: "Neal Stephenson" },
+  { title: "Steve Jobs", author: "Walter Isaacson" },
+  { title: "Elon Musk", author: "Walter Isaacson" },
+  { title: "Made in Japan", author: "Akio Morita" },
+  { title: "Boyd", author: "Robert Coram" },
+  { title: "1984", author: "George Orwell" },
+  { title: "The Prince", author: "Machiavelli" },
+  { title: "Meditations", author: "Marcus Aurelius" },
+  { title: "The Design of Everyday Things", author: "Donald A. Norman" },
+  { title: "Bobby Fischer Teaches Chess", author: "Bobby Fischer" },
+  { title: "The Goal", author: "Eliyahu M. Goldratt" },
+  { title: "Zero to One", author: "Peter Thiel" },
+  { title: "Range", author: "David Epstein" },
+];
 ---
 
-<Layout title="Reading list | Nicholas Charriere" showHome={true}>
-  <h1 class="text-4xl mt-4 font-bold">Reading list</h1>
-  <div class="flex flex-col divide-y divide-bg-accent mb-40">
+<Layout title="Reading list | Nicholas Charriere">
+  <h1 class="text-4xl mb-6 font-bold text-heading">Reading list</h1>
+  <p class="mb-8">
+    I read mostly fiction — I love the classics, fantasy, and sci-fi. But I'm listing books here that fall outside those categories, since that's the more interesting projection for this blog.
+  </p>
+
+  <h2 class="text-2xl font-bold text-heading mb-4">Books</h2>
+  <ul class="list-disc pl-5 mb-12">
     {
-      articles.map((article) => (
-        <div class="py-6">
-          <a
-            href={article.url}
-            class="text-text-700 font-medium underline hover:text-froly-500 transition-all duration-200 hover:no-underline underline-offset-2"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {article.title}
-          </a>
-          <p class="font-light text-sm mt-1"> — {article.source}</p>
-        </div>
+      books.map((book) => (
+        <li class="mb-1">
+          <strong class="text-heading">{book.title}</strong> — {book.author}
+        </li>
       ))
     }
-  </div>
+  </ul>
+
+  <h2 class="text-2xl font-bold text-heading mb-4">Articles</h2>
+  <ul class="list-disc pl-5 mb-12">
+    {
+      articles.map((article) => (
+        <li class="mb-1">
+          <a
+            href={article.url}
+            class="text-link hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          ><strong>{article.title}</strong></a> — {article.source}
+        </li>
+      ))
+    }
+  </ul>
 </Layout>

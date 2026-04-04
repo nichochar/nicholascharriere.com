@@ -5,20 +5,19 @@ const allBlogPosts = await getCollection("blog", ({ data }) => {
   return data.published;
 });
 
-export const humanTime = (date: Date) => {
-  return date.toLocaleString(undefined, {
-    weekday: "long",
+export const shortDate = (date: Date) => {
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
-    month: "long",
+    month: "short",
     day: "numeric",
   });
 };
 ---
 
-<Layout title="Blog" showHome={true}>
-  <h1 class="text-4xl mt-4 mb-6 font-bold">Blog</h1>
+<Layout title="Blog">
+  <h1 class="text-4xl mb-6 font-bold text-heading">Blog</h1>
 
-  <div class="flex flex-col gap-12 w-full pb-20">
+  <ul class="list-none p-0">
     {
       allBlogPosts
         .filter((post) => post.data.published)
@@ -32,26 +31,16 @@ export const humanTime = (date: Date) => {
         .map(
           (post) =>
             post.data.published && (
-              <a href={`/blog/${post.slug}`}>
-                <article class="">
-                  <div class="flex items-center gap-4 text-xs flex-wrap">
-                    <time
-                      datetime={post.data.published.toISOString()}
-                      class="text-gray-500"
-                    >
-                      {humanTime(post.data.published)}
-                    </time>
-                  </div>
-                  <div class="group relative hover:opacity-80">
-                    <h3 class="text-xl font-semibold leading-6">
-                      <span class="absolute inset-0" />
-                      {post.data.title}
-                    </h3>
-                  </div>
-                </article>
-              </a>
+              <li class="flex mb-1">
+                <span class="flex-[0_0_130px] text-gray-500 italic text-sm">
+                  {shortDate(post.data.published)}
+                </span>
+                <a href={`/blog/${post.slug}`} class="text-link hover:underline">
+                  {post.data.title}
+                </a>
+              </li>
             ),
         )
     }
-  </div>
+  </ul>
 </Layout>

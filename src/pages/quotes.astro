@@ -96,14 +96,14 @@ const quotes = [
 ];
 ---
 
-<Layout title="Favorite quotes | Nicholas Charriere" showHome={true}>
-  <h1 class="text-4xl mt-4 font-bold">Favorite quotes</h1>
-  <div class="flex flex-col divide-y divide-bg-accent mb-40">
+<Layout title="Favorite quotes | Nicholas Charriere">
+  <h1 class="text-4xl mb-6 font-bold text-heading">Favorite quotes</h1>
+  <div class="flex flex-col divide-y divide-gray-200 mb-40">
     {
       quotes.map((quote) => (
         <div class="py-6">
           <blockquote class="py-1 my-1">
-            <p class="">"{quote.quote}"</p>
+            <p>"{quote.quote}"</p>
           </blockquote>
           <p class="font-light text-sm"> — {quote.source}</p>
         </div>

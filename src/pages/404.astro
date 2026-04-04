@@ -1,26 +1,18 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import * as Icon from "@astropub/icons";
-// Can i do better here?
 
 const blob = Math.floor(Math.random() * 3) + 1;
 var pathname = new URL(Astro.request.url).pathname;
 ---
 
-<Layout title="Not found | Nicholas Charriere" showHome={true}>
-  <main class="container max-w-xl mx-auto text-center">
-    <a
-      class="absolute top-4 left-4 mb-10 flex gap-2 items-center no-underline font-thin"
-      href="/"
-    >
-      <Icon.Home size="15" />
-    </a>
+<Layout title="Not found | Nicholas Charriere">
+  <main class="text-center">
     <div
-      class="font-mono rounded-xl mt-4 px-2 py-0.5 border border-text-300 w-fit mx-auto"
+      class="font-mono rounded mt-4 px-2 py-0.5 border border-gray-300 w-fit mx-auto"
     >
       {pathname}
     </div>
     <img src=`/blob${blob}.png` alt="404" class="w-1/2 mx-auto opacity-70" />
-    <p class="max-w-xl py-1">This is not the url you're looking for.</p>
+    <p class="py-1">This is not the url you're looking for.</p>
   </main>
 </Layout>
