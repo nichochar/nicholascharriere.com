@@ -1,0 +1,82 @@
+---
+title: "3 Kinds of Tech Debt"
+published: 2021-07-10
+tags: ["engineering", "software", "architecture"]
+slug: "3-kinds-of-tech-debt"
+---
+
+# 3 Kinds of Tech Debt
+
+In software engineering, we’re often faced with trade-offs that sacrifice what is best for the long term against something that increases velocity in the short term. A commonly used financial analogy is describing this as taking on technical debt.
+
+I will not cover accidental and deliberate tech debt, neither will I give a decision making framework in this article. That is its own subject, and context specific.
+
+However, there is a mental framework that has worked well for me across different teams, codebases and systems. I categorize technical debt in 3 buckets: code, data, and architecture. Let’s go over them now with some examples.
+
+## Code tech debt
+
+This is probably the most common, and the first that pops to mind. This is debt that is taken in the form of suboptimal code that we commit. Some examples:
+
+- copy paste some code for now and refactor it later
+- write one big function that does all of the things
+- import a huge library just for a tiny functionality requirement
+- extend a function signature to manage an edge case
+
+Everyone has likely seen a lot of this:
+
+```python
+# This is a hack: @TODO FIXME
+def barbaric_function(param1, param2, param3, param4, special_case=None):
+    # This code is very brittle but we need to ship
+    if special_case:
+        import something.pretty.bad
+        bad.hax0r(special_case)
+    ...
+```
+
+Code tech debt tends to get called out the most, as it is more obvious when reviewing others’ code, or simply reading codebases. It’s the most visible of the 3 buckets.
+
+It is also typically easy enough to fix, since you can wrap your logic with tests and refactor, all in one code change, or a few surgical strikes. TDD has done wonders for codebases riddled with tech debt that need a makeover. Either way, it’s just code, and that is a reasonable surface area to manage taking on and paying off debt.
+
+A lot of the time, when people say tech debt they are in fact thinking about this. I wish it wasn’t so because this is the least harmful.
+
+## Architecture tech debt
+
+This one is a much less common, but highly critical form of debt that projects take on. It has to do with design considerations around the system architecture, runtime choices, interfaces, service design, storage decisions, and so on.
+
+Some examples:
+
+- What runtime are the processes running in?
+- How are we message passing between processes or services?
+- Are we adopting a monolithic strategy, sharing libraries, or a microservices-oriented architecture?
+- Should this be an offline job or an online service?
+- Will the workers be stateless or not?
+- Should we adopt a polling model (pull), a trigger (push), or an event-driven one (pub/sub)?
+
+These architecture decisions can drive projects into totally different directions. Using an intermediary pub/sub queue when traffic is smooth and QPS is low would likely add debt in the form of maintenance and debugging. However, if the traffic is very spiky and service B cannot handle peak load, then the push model would be the one that incurs the most debt in this area.
+
+Paying back architecture debt happens typically on a much larger timeline. Long feedback loops are harder to learn from, and because of this architecture debt can go undetected easily. The average tenure of a software engineer in Silicon Valley is 18 months, but discovering if an early architecture decision was good or bad will likely take much longer.
+
+Architecture debt costs can be high, including bad on-call schedules, rigid and hard-to-reason-about systems, and lack of debuggability. They are harder to pay back later compared to code debt. It is always worth analyzing deeply the systems you’re working on and understanding what key decisions were made, explicit or not, that impact service characteristics like maintainability, flexibility, and reliability.
+
+Finally, architecture tech debt can sneak up even when trying to avoid it. Premature optimization often leads to situations where we end up creating debt instead of the intent, avoiding it. An example would be a web service designed for 10k QPS that ends up reaching one hundredth of that concurrency scale. Many architecture decisions could have been different, and debt could easily be inserted as unnecessary complexity.
+
+## Data & modeling tech debt
+
+Data modeling seems less common than it used to be. There was a time where most engineers worked regularly on data modeling. Nowadays people usually delegate that to a special team or use tools that allow them to ignore the problem completely.
+
+Data modeling can have impact both in the short term and the long term. In the short term, spending lots of time on models and types can feel very expensive, so it is tempting to pick something very flexible to optimize for early iteration and flexibility. However, I’ve seen this go the wrong way and end up costing a lot in terms of backfills, data integrity fixes, and remodeling efforts.
+
+Good data modeling has impact on both the code and the system architecture, so these 3 categories are not unrelated. However, data is one of the hardest things to get right, and also one of the hardest things to change. This combination is the reason why data tech debt should be taken very seriously, and actively identified, called out, and justified.
+
+Down the line, when you want to change your data model, the dependency graph on such a change is often very unclear. It requires a combination of code changes, DB migrations, and backfills, all of which could have complex dependencies and intricacies, and could affect more than one system, team, or service.
+
+I personally believe that this is the category of tech debt that happens accidentally the most. Understanding the read and write patterns, and the relationships between your data models, goes a very long way in preventing this kind of debt, or at least taking it on consciously.
+
+## Conclusion
+
+We’ve covered code, data, and architecture tech debt. Next time you’re making design decisions or reviewing code, try and identify the debt you’re taking on, and have an explicit conversation about it. What could be the consequences? Realistically, when if ever will it be paid off?
+
+Architecture and data tech debt will be the hardest to notice in the regular development day to day, but they have the toughest payback costs later, so they are worth your consideration.
+
+Finally, I want to emphasize that tech debt is not always bad. Using MongoDB to prototype ideas or writing an ugly function that does abusive things to solve a critical bug can be justified, and the optimal way to do things. It’s just a matter of doing so deliberately.
