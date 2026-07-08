@@ -1,0 +1,73 @@
+---
+title: "The Dogfood Advantage"
+published: 2026-07-08
+tags: ["AI", "agents", "LLMs", "startups"]
+slug: "the-dogfood-advantage"
+image: "https://nicholascharriere.com/og-the-great-convergence.png"
+---
+
+import { Image } from "astro:assets";
+import recursiveSelfImprovement from "../../images/dogfood-anthropic-recursive-self-improvement.png";
+import dogfoodSpectrum from "../../images/dogfood-spectrum.png";
+import labsExtreme from "../../images/dogfood-labs-extreme.png";
+import compoundingLoop from "../../images/dogfood-compounding-loop.png";
+
+# The Dogfood Advantage
+
+People often explain OpenAI and Anthropic's velocity with culture, talent or capital. I think there is a more mundane compounding effect at play: dogfooding.
+
+Dogfooding is usually framed as a QA discipline. Using your own products is important for making sure they work well. I have noticed that the value of dogfooding is on a spectrum, and recently the labs have shown that they have an extreme version of it.
+
+Anthropic ships Claude Code with Claude Code, and this is why we're seeing such an acceleration from the top labs. I call this the dogfood advantage.
+
+<Image
+  class="mx-auto rounded-sm"
+  src={recursiveSelfImprovement}
+  alt="Diagram from Anthropic's blog on recursive self-improvement"
+  width="700"
+/>
+
+(source: [anthropic blog](https://www.anthropic.com/institute/recursive-self-improvement))
+
+I have been hearing the term dogfooding since my early days in tech. When I worked at Pinterest it was often thought that we had a disadvantage vs Reddit or Twitter since the people building the product (the developers) were not natural DAUs. Some would force themselves to use the product, but the feedback loop was less intense.
+
+Contrast this with twitter or instagram or whatsapp, where the majority of developers are daily active users. I think it's one of the underrated reasons that some technology products are significantly better than others.
+
+Now let's push the idea further: some companies build products whose goal is not entertainment, but rather productivity. What if you heavily use your own product and this usage gives you some kind of competitive advantage in business? I think this is the case with quite a few companies: Figma is better at design because they use Figma so well, Stripe is good at billing. Mixpanel/posthog are likely really good at hillclimbing small product experiments with A/B testing, etc...
+
+If you contrast this with companies where the customer is completely separate from the builders, say hospital software like Epic or education software. You'll end up with significantly worse products at the top, without any product feedback loops which compound.
+
+<Image
+  class="mx-auto rounded-sm"
+  src={dogfoodSpectrum}
+  alt="The dogfood advantage spectrum, from low to extreme"
+  width="700"
+/>
+
+I've noticed an extreme position appear on this spectrum. The labs are producing models and harnesses which are intelligence on tap, fueling all parts of the business and being used by their entire workforce. The whole idea behind [the great convergence](https://nicholascharriere.com/blog/the-great-convergence/) is that all knowledge work will be performed by agents using AI models in automated loops and workflows.
+
+This means that the dogfood advantage of these companies is on another level.
+
+Can you think of any company where people use their products _more_ than at Anthropic or OpenAI? I can't. They are using their products all day (and all night now!), dogfooding, getting value, getting feedback. Better model -> better harness -> more internal productivity -> better model.
+
+<Image
+  class="mx-auto rounded-sm"
+  src={labsExtreme}
+  alt="AI labs sitting at the extreme end of the dogfood spectrum"
+  width="700"
+/>
+
+This advantage has many facets, from getting early access (imagine having access to Fable or 5.6 for months before everyone else) to being token rich, since token cost is a rate-limiter for everyone except the lab.
+
+<Image
+  class="mx-auto rounded-sm"
+  src={compoundingLoop}
+  alt="Compounding loop between model quality, harness, and internal productivity"
+  width="700"
+/>
+
+This compounding is one concrete reason the labs are accelerating relative to the rest of the economy. It's not the only reason (selling intelligence APIs is about as high-PMF as products get), but it's the most underrated one.
+
+Being fluent in Salesforce doesn't help you build chips. Being fluent in Claude helps every function in the business.
+
+If you're building something, ask yourself: do I have a dogfood advantage?
