@@ -11,6 +11,7 @@ import recursiveSelfImprovement from "../../images/dogfood-anthropic-recursive-s
 import dogfoodSpectrum from "../../images/dogfood-spectrum.png";
 import labsExtreme from "../../images/dogfood-labs-extreme.png";
 import compoundingLoop from "../../images/dogfood-compounding-loop.png";
+import bunInRust from "../../images/dogfood-bun-in-rust.png";
 
 # The Dogfood Advantage
 
@@ -31,11 +32,11 @@ Anthropic ships Claude Code with Claude Code. Their marketing team uses cowork t
 
 I have been hearing the term dogfooding since my early days in tech. When I worked at Pinterest it was often thought that we had a disadvantage vs Reddit or Twitter since the people building the product (the developers) were not natural DAUs. Some would force themselves to use the product, but the feedback loop was not nearly as tight.
 
-Contrast this with Twitter or Tnstagram or Whatsapp, where the majority of developers are daily active users. I think it's one of the underrated reasons that some technology products are significantly better than others.
+Contrast this with Twitter or Instagram or Whatsapp, where the majority of developers are daily active users. I think it's one of the underrated reasons that some technology products are significantly better than others.
 
-Let's push the idea further: some companies build products whose goal is not entertainment, but rather productivity. What if you heavily use your own product and this usage gives you some kind of competitive advantage in business? Some concrete examples: Figma is better at design because they use Figma so well; Stripe is good at billing; PostHog are really good at hillclimbing small product experiments with A/B testing, etc...
+Let's push the idea further: some companies build products whose goal is not entertainment, but rather productivity. What if you heavily use your own product and this usage gives you some kind of competitive advantage in business? Some concrete examples: Figma is better at design because they use Figma so well; Stripe is good at billing; Notion runs on Notion (this one might be the closest to the labs since they have all of the data for knowledge work and now have agent harnesses also).
 
-Contrast this with companies where the customer is completely separate from the builders, say hospital software like Epic or education software. Intuitively you can see how those products wouldn't get nearly as good (and wouldn't create improvement flywheels), because they lack feedback loops which compound.
+On the low end of the dogfood advantage scale, we have companies where the customer is completely separate from the builders, say hospital software like Epic or education software. Intuitively you can see how those products wouldn't get nearly as good (and wouldn't create improvement flywheels), because they lack feedback loops which compound.
 
 <Image
   class="mx-auto rounded-sm"
@@ -44,7 +45,7 @@ Contrast this with companies where the customer is completely separate from the 
   width="700"
 />
 
-AI labs are in an extreme position on this spectrum. The labs are producing models and harnesses which are intelligence on tap, fueling all parts of the business and being used by their entire workforce. The whole idea behind [the great convergence](https://nicholascharriere.com/blog/the-great-convergence/) is that all knowledge work will be performed by agents using AI models in automated loops and workflows.
+AI labs are in an extreme position on this spectrum. The labs are producing models and harnesses which are intelligence on tap, fueling all parts of the business and being used by their entire workforce. The whole idea behind [the great convergence](https://nicholascharriere.com/blog/the-great-convergence/) is that all knowledge work will be performed by agents using AI models in automated loops and workflows. Their core product does this.
 
 This means that the dogfood advantage of these companies is on another level.
 
@@ -66,8 +67,21 @@ This advantage has many facets, from getting early access (imagine having access
   width="700"
 />
 
-This compounding is one concrete reason the labs are accelerating relative to the rest of the economy. It's not the only reason (selling intelligence APIs is about as high-PMF as products get), but it's the most underrated one.
+Recently, Jarred blogged about his journey of using Anthropic mythos to rewrite bun from Zig to Rust. Notably in this [article](https://bun.com/blog/bun-in-rust), he explains that he spent over $150k _and_ was using a model that others didn't have access to, leveraging both of these advantages:
+
+<Image
+  class="mx-auto rounded-sm"
+  src={bunInRust}
+  alt="Screenshot from Jarred's bun-in-rust blog noting both the token cost and early model access"
+  width="700"
+/>
+
+Jarred's blog mentioning both the insane token cost and the early access
+
+This advantage compounds. I think this is one concrete reason the labs are accelerating relative to the rest of the economy. It's not the only reason (selling intelligence APIs is about as high-PMF as products get), but it's the most underrated one.
 
 Being fluent in Salesforce doesn't help you build chips. Being fluent in Claude helps every function in the business.
 
 If you're building something, ask yourself: do I have a dogfood advantage?
+
+We talk often about moats, which I think are disappearing. I think we should be reasoning more about deltas, velocity, and compounding advantages. I think the dogfood advantage is one of these.
