@@ -361,6 +361,10 @@ function isAbs(p: string): p is AbsolutePath {
       function escapeHtml(s) {
         return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
+      // Escape, then turn `foo` into <code>foo</code>
+      function renderInline(s) {
+        return escapeHtml(s).replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-gray-100 text-gray-900 font-mono text-[0.9em]">$1</code>');
+      }
 
       function renderStats() {
         const now = Date.now();
@@ -397,8 +401,8 @@ function isAbs(p: string): p is AbsolutePath {
         `;
 
         if (revealed) {
-          html += `<div class="text-base mb-3"><strong>${escapeHtml(c.gist)}</strong></div>`;
-          html += `<div class="text-sm text-gray-700 mb-3 leading-relaxed">${escapeHtml(c.detail)}</div>`;
+          html += `<div class="text-base mb-3 font-semibold">${renderInline(c.gist)}</div>`;
+          html += `<div class="text-sm text-gray-700 mb-3 leading-relaxed">${renderInline(c.detail)}</div>`;
           if (c.code) {
             html += `<pre class="bg-gray-900 text-gray-100 text-xs p-3 rounded overflow-x-auto"><code>${escapeHtml(c.code)}</code></pre>`;
           }
