@@ -1,17 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
-// 30 curated cards from "Effective TypeScript" (Dan Vanderkam, 2nd ed).
-// Explanations and examples are original, distilled from public "Things to Remember" summaries
-// (github.com/danvk/effective-typescript). Not book text.
+// Curated cards. Mostly from "Effective TypeScript" (Dan Vanderkam, 2nd ed) —
+// explanations distilled from public "Things to Remember" summaries, not book text.
+// Plus a JS/TS fundamentals section.
 
 interface Card {
-  id: number;       // Item number in the book
-  title: string;    // Item title
-  chapter: string;  // Short chapter label
-  gist: string;     // One-line takeaway (the "answer")
+  title: string;    // Card title (front of card)
+  gist: string;     // One-line takeaway
   detail: string;   // 2-4 sentence deeper explanation
   code?: string;    // Optional tiny code example
+  chapter?: string; // Optional section label (e.g. book chapter)
+  id?: number;      // Optional source reference (e.g. book item number)
 }
 
 const cards: Card[] = [
@@ -270,6 +270,120 @@ function isAbs(p: string): p is AbsolutePath {
   return p.startsWith('/');
 }`,
   },
+
+  // ---- JS/TS fundamentals (no book reference) ----
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "What are the possible values of JavaScript's `typeof`?",
+    gist: "`'string'`, `'number'`, `'bigint'`, `'boolean'`, `'symbol'`, `'undefined'`, `'object'`, `'function'`. Eight total.",
+    detail: "Gotchas: `typeof null === 'object'` (historical bug, never fixed). Arrays are `'object'` — use `Array.isArray()`. Functions are the only callable thing that returns `'function'` instead of `'object'`. `typeof NaN === 'number'`. Non-existent variables return `'undefined'` without throwing — the one place `typeof` is safe on undeclared names.",
+    code: `typeof "abc"       // 'string'
+typeof 42          // 'number'
+typeof 42n         // 'bigint'
+typeof true        // 'boolean'
+typeof Symbol()    // 'symbol'
+typeof undefined   // 'undefined'
+typeof null        // 'object'  ⚠️
+typeof []          // 'object'
+typeof {}          // 'object'
+typeof (() => {})  // 'function'`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "`==` vs `===` — what are the coercion rules?",
+    gist: "`==` triggers type coercion; `===` doesn't. Always use `===` except one case: `x == null` matches both null AND undefined.",
+    detail: "`==` is a minefield: `'' == 0` (true), `'0' == false` (true), `[] == false` (true), `[] == ![]` (true). The only useful use of `==` is `x == null` as shorthand for `x === null || x === undefined`. Lint rules like `eqeqeq` allow that exception.",
+    code: `'' == 0          // true  😵
+'0' == false     // true
+null == undefined // true
+NaN == NaN       // false (always)
+NaN === NaN      // false (use Number.isNaN)`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "Falsy values in JavaScript",
+    gist: "`false`, `0`, `-0`, `0n`, `''`, `null`, `undefined`, `NaN`. Everything else is truthy — including `[]` and `{}`.",
+    detail: "Common bug: `if (obj.count)` skips the case where count is 0. Use `if (obj.count != null)` or `??` (nullish coalescing) instead of `||`. Empty arrays and empty objects are TRUTHY — that trips up devs coming from Python or Ruby.",
+    code: `Boolean([])       // true  (empty array is truthy)
+Boolean({})       // true  (empty object is truthy)
+Boolean('0')      // true  (non-empty string)
+0 || 'default'    // 'default'  ⚠️ loses valid 0
+0 ?? 'default'    // 0  ✅ nullish coalescing`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "`??` vs `||` — nullish coalescing vs logical OR",
+    gist: "`||` falls back on any falsy value. `??` only falls back on `null`/`undefined`. Use `??` for defaults.",
+    detail: "`x || 'default'` replaces 0, '', false with the default — usually a bug. `x ?? 'default'` only kicks in when x is null or undefined. Same story for `||=` vs `??=`.",
+    code: `const port = userPort || 3000;    // ❌ 0 becomes 3000
+const port2 = userPort ?? 3000;   // ✅ 0 stays 0
+const name = user.name || 'Anon'; // ❌ '' becomes 'Anon'
+const name2 = user.name ?? 'Anon'; // ✅ '' stays ''`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "`Array.isArray` vs `instanceof Array`",
+    gist: "Use `Array.isArray(x)`. `instanceof Array` breaks across iframes/realms.",
+    detail: "Each JS realm (iframe, worker) has its own `Array` constructor. An array from another iframe won't be `instanceof` your realm's Array. `Array.isArray` checks the internal slot and works across realms. Also handles the null/undefined edge cases without throwing.",
+    code: `Array.isArray([])        // true
+Array.isArray('abc')     // false
+Array.isArray(null)      // false (no throw)
+[] instanceof Array      // usually true, but breaks in iframes`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "`for...in` vs `for...of` vs `.forEach`",
+    gist: "`for...in` = keys (including inherited). `for...of` = values (iterables only). `.forEach` = values, but can't `break`/`return`.",
+    detail: "`for...in` on an array gives you string indices AND any enumerable properties on the prototype — rarely what you want. `for...of` works on arrays, Maps, Sets, strings, generators. `.forEach` looks cleanest but can't be interrupted; also skips holes in sparse arrays.",
+    code: `const arr = ['a', 'b', 'c'];
+for (const i in arr)  console.log(i); // '0','1','2' (strings!)
+for (const v of arr)  console.log(v); // 'a','b','c'
+for (const [i, v] of arr.entries()) {} // both`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "Reference vs value equality",
+    gist: "Primitives compare by value. Objects/arrays/functions compare by reference. `{a:1} === {a:1}` is false.",
+    detail: "There's no built-in deep equality. Use `JSON.stringify` for simple cases (breaks on cycles, undefined, functions, Dates), or a library (`lodash.isEqual`, `fast-deep-equal`). Node's `assert.deepStrictEqual` for tests. Same for hashing objects as Map keys — use a stringified form or a WeakMap keyed by the object identity.",
+    code: `const a = { x: 1 };
+const b = { x: 1 };
+a === b                      // false (different refs)
+a === a                      // true
+JSON.stringify(a) === JSON.stringify(b)  // true (crude)`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "`this` in arrow functions vs regular functions",
+    gist: "Arrow functions capture `this` from the enclosing scope. Regular functions get `this` from how they're called.",
+    detail: "`obj.method()` — `this` is `obj`. Detached: `const f = obj.method; f()` — `this` is undefined (strict) or global. Arrow: always inherits from where it was defined. Use arrows for callbacks in class methods; use regular functions when you WANT dynamic `this` (event handlers on DOM, methods).",
+    code: `class Timer {
+  ms = 0;
+  start() {
+    setInterval(() => this.ms++, 1000);   // ✅ arrow: this = Timer
+    setInterval(function () { this.ms++ }, 1000); // ❌ this = undefined
+  }
+}`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "Promise states and `.then` return values",
+    gist: "Promises are pending, fulfilled, or rejected. `.then(fn)` returns a new promise resolved with `fn`'s return value — or `fn`'s thrown error.",
+    detail: "Returning a promise from `.then` chains it (flat, not nested). Throwing inside `.then` — or returning a rejected promise — skips to the next `.catch`. Unhandled rejections crash Node processes (v15+). `Promise.all` fails fast; `Promise.allSettled` waits for all.",
+    code: `Promise.resolve(1)
+  .then(x => x + 1)          // 2
+  .then(x => Promise.resolve(x * 10)) // 20 (auto-flattened)
+  .then(x => { throw new Error('oops') })
+  .catch(e => console.log(e.message)); // 'oops'`,
+  },
+  {
+    chapter: "JS/TS Fundamentals",
+    title: "`Object.keys` vs `Object.getOwnPropertyNames` vs `Reflect.ownKeys`",
+    gist: "`Object.keys` = enumerable string keys. `getOwnPropertyNames` = all string keys (incl. non-enumerable). `Reflect.ownKeys` = all string + symbol keys.",
+    detail: "Rarely matters until it does. Class methods are non-enumerable by default — `Object.keys(instance)` won't list them. Symbol keys are invisible to `keys/entries/values`. `JSON.stringify` only serializes enumerable string keys.",
+    code: `class Foo { bar() {} }
+Object.keys(new Foo())               // []
+Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
+  },
 ];
 ---
 
@@ -395,9 +509,15 @@ function isAbs(p: string): p is AbsolutePath {
         }
 
         const c = currentCard;
+        const metaParts = [];
+        if (c.id != null) metaParts.push(`Item ${c.id}`);
+        if (c.chapter) metaParts.push(escapeHtml(c.chapter));
+        const meta = metaParts.length
+          ? `<div class="text-xs text-gray-500 mb-2">${metaParts.join(' · ')}</div>`
+          : '';
         let html = `
-          <div class="text-xs text-gray-500 mb-2">Item ${c.id} · ${escapeHtml(c.chapter)}</div>
-          <div class="text-xl font-semibold text-heading mb-4">${escapeHtml(c.title)}</div>
+          ${meta}
+          <div class="text-xl font-semibold text-heading mb-4">${renderInline(c.title)}</div>
         `;
 
         if (revealed) {
