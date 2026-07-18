@@ -1,0 +1,480 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// 30 curated cards from "Effective TypeScript" (Dan Vanderkam, 2nd ed).
+// Explanations and examples are original, distilled from public "Things to Remember" summaries
+// (github.com/danvk/effective-typescript). Not book text.
+
+interface Card {
+  id: number;       // Item number in the book
+  title: string;    // Item title
+  chapter: string;  // Short chapter label
+  gist: string;     // One-line takeaway (the "answer")
+  detail: string;   // 2-4 sentence deeper explanation
+  code?: string;    // Optional tiny code example
+}
+
+const cards: Card[] = [
+  {
+    id: 3, chapter: "Getting to Know TS",
+    title: "Code Generation Is Independent of Types",
+    gist: "Types are erased at compile time. They cannot affect runtime behavior.",
+    detail: "A program with type errors can still emit JS. Types don't exist at runtime — you can't `instanceof` an interface. To check a type at runtime, use tagged unions, property checks, or classes (which are both a type and a value).",
+    code: `interface Foo { kind: 'foo'; x: number }
+function isFoo(v: unknown): v is Foo {
+  return typeof v === 'object' && v !== null && (v as any).kind === 'foo';
+}`,
+  },
+  {
+    id: 4, chapter: "Getting to Know TS",
+    title: "Get Comfortable with Structural Typing",
+    gist: "Types are not sealed. If it has the required shape, it's assignable — extra properties are fine (in variables).",
+    detail: "TS uses duck typing. A value assignable to your interface may have properties beyond those you listed. Classes follow the same rules — you may not actually have an instance of the class you expect.",
+    code: `interface Vector2D { x: number; y: number }
+const v3 = { x: 1, y: 2, z: 3 };
+const v2: Vector2D = v3; // OK, extra 'z' is fine`,
+  },
+  {
+    id: 7, chapter: "Type System",
+    title: "Think of Types as Sets of Values",
+    gist: "A type is the set of values it allows. 'extends' means 'subset of'.",
+    detail: "`never` = empty set. `unknown` = universal set. `A | B` = union of sets. `A & B` = intersection. `keyof (A & B) = keyof A | keyof B`. `keyof (A | B) = keyof A & keyof B`.",
+  },
+  {
+    id: 8, chapter: "Type System",
+    title: "Type Space vs Value Space",
+    gist: "Every symbol lives in type space, value space, or both. Learn to tell which.",
+    detail: "`type` and `interface` are erased. `const`, `let`, `function` are value-only. `class` and `enum` introduce both. `typeof x` in a type position gives you x's type; in a value position it's the JS operator.",
+    code: `class Cylinder { r = 0 }
+type T = typeof Cylinder;  // the constructor type
+const c = new Cylinder();  // value use`,
+  },
+  {
+    id: 9, chapter: "Type System",
+    title: "Prefer Type Annotations to Type Assertions",
+    gist: "Use `: Type` (a claim TS verifies) over `as Type` (an override that silences the checker).",
+    detail: "Assertions can hide bugs. Only use `as` when you know something TS doesn't (e.g., DOM lookups, JSON with a validated shape). Always add a comment explaining why the assertion is safe.",
+    code: `const alice: Person = { name: 'Alice' };     // ✅ TS verifies
+const bob = { name: 'Bob' } as Person;        // ❌ trusts you blindly`,
+  },
+  {
+    id: 11, chapter: "Type System",
+    title: "Distinguish Excess Property Checking from Type Checking",
+    gist: "Object literals get extra-strict checks; variables don't.",
+    detail: "TS only rejects extra properties when you pass an object literal directly. Assigning through an intermediate variable skips the check. This is a lint-like feature, not a real assignability rule.",
+    code: `interface Room { size: number }
+const r: Room = { size: 10, extra: 1 };       // ❌ excess property
+const obj = { size: 10, extra: 1 };
+const r2: Room = obj;                          // ✅ (structural)`,
+  },
+  {
+    id: 13, chapter: "Type System",
+    title: "type vs interface",
+    gist: "Mostly interchangeable. Interfaces merge; type aliases don't. Prefer interface for object types by default.",
+    detail: "`interface` supports declaration merging (useful for augmenting globals/modules — but risky for app types). `type` supports unions, tuples, mapped types, and conditional types. Both can extend each other.",
+  },
+  {
+    id: 14, chapter: "Type System",
+    title: "Use readonly to Avoid Mutation Errors",
+    gist: "Mark params `readonly` if the function shouldn't mutate them. `const` prevents reassignment; `readonly` prevents mutation.",
+    detail: "Both are shallow — `readonly` doesn't recurse. `Readonly<T>` only affects properties, not methods. Making params readonly is a cheap way to document intent and catch bugs.",
+    code: `function sum(arr: readonly number[]): number {
+  arr.push(1);  // ❌ Property 'push' does not exist on readonly array
+  return arr.reduce((a, b) => a + b, 0);
+}`,
+  },
+  {
+    id: 20, chapter: "Inference",
+    title: "Understand How a Variable Gets Its Type (Widening)",
+    gist: "`let` widens literals to their base type. `const` keeps them narrow. `as const` freezes deeply.",
+    detail: "`let x = 'a'` gives x type `string`. `const x = 'a'` gives type `'a'`. For objects, `const` still widens property types — use `as const` or `satisfies` to control this.",
+    code: `let a = 'hello';        // string
+const b = 'hello';      // 'hello'
+const o = { k: 'v' } as const;  // { readonly k: 'v' }`,
+  },
+  {
+    id: 22, chapter: "Inference",
+    title: "Understand Type Narrowing",
+    gist: "TS narrows types via conditionals, type guards, `in`, `instanceof`, and tagged unions.",
+    detail: "Use `if (x === null)`, `if ('foo' in obj)`, `if (typeof x === 'string')`. Write user-defined type guards `(x): x is T => ...` when you need custom narrowing. Tagged unions are the most reliable pattern.",
+    code: `type Shape = { kind: 'circle'; r: number } | { kind: 'square'; s: number };
+function area(sh: Shape) {
+  if (sh.kind === 'circle') return Math.PI * sh.r ** 2;
+  return sh.s ** 2;
+}`,
+  },
+  {
+    id: 24, chapter: "Inference",
+    title: "Understand How Context Is Used in Type Inference",
+    gist: "Factoring out a value can break inference. When it does, add an annotation or `as const`.",
+    detail: "String literals get widened when stored in a variable. If a function expects `'a' | 'b'`, passing an inline literal works but passing a variable of type `string` doesn't. Fix with `const x: 'a' | 'b' = 'a'` or `as const`.",
+    code: `function pick(c: 'red' | 'blue') {}
+const c = 'red';           // 'red'
+pick(c);                   // ✅
+let d = 'red';             // widens to string
+pick(d);                   // ❌`,
+  },
+  {
+    id: 25, chapter: "Inference",
+    title: "Understand Evolving Types",
+    gist: "Arrays/values initialized to `[]`, `null`, or `undefined` can evolve as you assign to them.",
+    detail: "Normally types only narrow. But `const nums = []` starts as `any[]` and evolves to `number[]` as you push numbers. Useful, but explicit annotations give better error checking.",
+    code: `const nums = [];       // any[]
+nums.push(1);
+nums.push('x');        // no error — evolves to (string | number)[]`,
+  },
+  {
+    id: 29, chapter: "Type Design",
+    title: "Prefer Types That Always Represent Valid States",
+    gist: "If your type can express illegal combinations, you'll hit bugs. Model states as a tagged union instead.",
+    detail: "Classic anti-pattern: `{ isLoading: boolean; error?: string; data?: T }` — what does `isLoading: true, error: 'x'` mean? Replace with `{state: 'pending'} | {state: 'error', error: string} | {state: 'ok', data: T}`.",
+  },
+  {
+    id: 30, chapter: "Type Design",
+    title: "Be Liberal in What You Accept, Strict in What You Produce",
+    gist: "Params: broad, optional-friendly. Returns: narrow, canonical.",
+    detail: "Postel's law for types. Return a strict canonical form so callers don't need defensive checks. Accept multiple forms in params for ergonomics. Use `Iterable<T>` over `T[]` when you only iterate.",
+  },
+  {
+    id: 33, chapter: "Type Design",
+    title: "Push null Values to the Perimeter of Your Types",
+    gist: "Don't sprinkle `T | null` everywhere. Make whole objects nullable, or fully non-null.",
+    detail: "Avoid designs where one field being null implies another is too — the checker can't see that relationship. Prefer `User | null` over `{ name: string | null; email: string | null }` when they're all-or-nothing.",
+  },
+  {
+    id: 34, chapter: "Type Design",
+    title: "Prefer Unions of Interfaces to Interfaces with Unions",
+    gist: "`FillLayer | LineLayer` beats `{ layout: FillLayout | LineLayout; paint: FillPaint | LinePaint }`.",
+    detail: "The second form obscures that `FillLayout` always goes with `FillPaint`. Unions of interfaces make relationships explicit and enable narrowing. Add a `type` discriminant to make it a tagged union.",
+  },
+  {
+    id: 35, chapter: "Type Design",
+    title: "Prefer More Precise Alternatives to String Types",
+    gist: "`string` is too broad. Use literal unions, `keyof T`, or template literal types.",
+    detail: "'Stringly typed' code hides bugs. `type Language = 'ts' | 'js' | 'py'` gives autocomplete and rejects typos. For property-name params, `keyof T` beats `string`.",
+    code: `function pluck<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];  // ✅ knows the exact return type
+}`,
+  },
+  {
+    id: 37, chapter: "Type Design",
+    title: "Limit the Use of Optional Properties",
+    gist: "Every `?` doubles your states. Think twice before adding one.",
+    detail: "Optional properties force defensive checks everywhere and can hide bugs. Prefer required properties with sensible defaults, or split into 'raw input' and 'normalized' types.",
+  },
+  {
+    id: 40, chapter: "Type Design",
+    title: "Prefer Imprecise Types to Inaccurate Types",
+    gist: "Don't model something wrong just to model it. `unknown` beats a lie.",
+    detail: "The uncanny valley of type safety: complex-but-wrong types are worse than simple-and-vague. If you can't capture something accurately, acknowledge the gap with `any` or `unknown` rather than misleading types.",
+  },
+  {
+    id: 43, chapter: "any & unknown",
+    title: "Use the Narrowest Possible Scope for any",
+    gist: "Localize `any`. Never return it from a function.",
+    detail: "Returning `any` poisons every caller silently. Prefer `as any` on the specific expression that needs it, in the smallest scope possible. Even better: use `unknown` and narrow at the boundary.",
+    code: `// ❌ leaks any everywhere
+function bad(x: any) { return x.y.z; }
+
+// ✅ scoped
+function ok(x: unknown) { return (x as { y: { z: number } }).y.z; }`,
+  },
+  {
+    id: 46, chapter: "any & unknown",
+    title: "Prefer unknown to any",
+    gist: "`unknown` is the type-safe `any`. It forces you to narrow before use.",
+    detail: "`any` bypasses the checker entirely. `unknown` accepts any value but doesn't let you *do* anything with it until you narrow it. Use it for JSON.parse, error catches, function boundaries.",
+    code: `function parseJSON(s: string): unknown {
+  return JSON.parse(s);
+}
+const x = parseJSON('{"a":1}');
+x.a;  // ❌ must narrow first`,
+  },
+  {
+    id: 48, chapter: "any & unknown",
+    title: "Avoid Soundness Traps",
+    gist: "Even without `any`, TS lies to you: array lookups, type assertions, mutating params, bad .d.ts files.",
+    detail: "`arr[i]` returns `T`, not `T | undefined`, even for out-of-bounds. Type predicates (`is`) trust you. Optional properties can be `undefined` even when marked. Know these gaps — enable `noUncheckedIndexedAccess` if you can.",
+    code: `const xs = [1, 2, 3];
+const x = xs[10];   // typed as number, actually undefined
+x.toFixed();        // 💥 runtime`,
+  },
+  {
+    id: 50, chapter: "Generics",
+    title: "Think of Generics as Functions Between Types",
+    gist: "`Partial<T>` is a function: takes a type, returns a type. `extends` is its parameter constraint.",
+    detail: "Type parameters are inputs. `extends` narrows the domain, like a type annotation on a function param. Give them meaningful names (not just T) and TSDoc them.",
+    code: `type MyPartial<T> = { [K in keyof T]?: T[K] };
+// MyPartial: (T) => a new type with all keys optional`,
+  },
+  {
+    id: 51, chapter: "Generics",
+    title: "Avoid Unnecessary Type Parameters",
+    gist: "Every generic must appear ≥2 times. If it appears once, it's not relating anything — replace with `unknown`.",
+    detail: "The golden rule: type params exist to link things. A 'return-only' generic like `parse<T>(s: string): T` is a lie — the caller invents T with no evidence. Prefer explicit assertions at the callsite.",
+    code: `// ❌ return-only generic (dangerous)
+function parse<T>(s: string): T { return JSON.parse(s); }
+
+// ✅ honest
+function parse(s: string): unknown { return JSON.parse(s); }`,
+  },
+  {
+    id: 52, chapter: "Generics",
+    title: "Prefer Conditional Types to Overload Signatures",
+    gist: "Overloads don't distribute over unions. Conditional types do.",
+    detail: "`function f(x: string): string; function f(x: number): number;` breaks when you pass `string | number`. Rewrite as `function f<T extends string | number>(x: T): T extends string ? string : number` and it just works.",
+  },
+  {
+    id: 53, chapter: "Generics",
+    title: "Control the Distribution of Unions over Conditional Types",
+    gist: "`T extends X ? A : B` distributes over unions in T. Wrap in `[T]` to prevent it.",
+    detail: "`type F<T> = T extends string ? 'yes' : 'no'; F<'a' | 1>` = `'yes' | 'no'`. To treat the union as a whole: `type F<T> = [T] extends [string] ? ...`. Watch out: `boolean` = `true | false` distributes too.",
+  },
+  {
+    id: 59, chapter: "Recipes",
+    title: "Use never for Exhaustiveness Checking",
+    gist: "In a switch, assign the remaining value to `never` in the default. Adding a new case will error until you handle it.",
+    detail: "Perfect for tagged unions. If you ever add a new variant, every exhaustiveness check in your code fails to compile — you can't forget to update.",
+    code: `type Shape = { kind: 'circle' } | { kind: 'square' };
+function f(s: Shape) {
+  switch (s.kind) {
+    case 'circle': return 1;
+    case 'square': return 2;
+    default: const _: never = s; return _;
+  }
+}`,
+  },
+  {
+    id: 60, chapter: "Recipes",
+    title: "Know How to Iterate Over Objects",
+    gist: "`for (const k in obj)` types k as string. Use `Object.entries` or a `keyof T` assertion.",
+    detail: "TS refuses to type `k` as `keyof T` in a for-in because your object might have extra keys at runtime (structural typing bites back). Use `Object.entries(obj)`, or assert `let k: keyof T` if you truly know the keys.",
+    code: `for (const [k, v] of Object.entries(obj)) {
+  // k: string, v: T[keyof T]
+}`,
+  },
+  {
+    id: 63, chapter: "Recipes",
+    title: "Use Optional never to Model Exclusive Or",
+    gist: "TS unions are inclusive. To make `A | B` mean 'exactly one', add `?: never` for the other's keys.",
+    detail: "`A | B` accepts objects that satisfy both. If you want XOR, give each variant `optionalKey?: never` for the keys of the other variant. Ugly but effective. Tagged unions are usually cleaner.",
+    code: `type Only<A, B> = (A & { [K in keyof B]?: never }) | (B & { [K in keyof A]?: never });`,
+  },
+  {
+    id: 64, chapter: "Recipes",
+    title: "Consider Brands for Nominal Typing",
+    gist: "Attach a fake property to distinguish structurally-identical types (e.g., `AbsolutePath` vs `string`).",
+    detail: "TS is structural — a `UserId` and `OrderId` are both `string`. Brand them: `type UserId = string & { readonly __brand: 'UserId' }`. Only your factory/guard can produce one. Zero runtime cost.",
+    code: `type AbsolutePath = string & { readonly __brand: 'abs' };
+function isAbs(p: string): p is AbsolutePath {
+  return p.startsWith('/');
+}`,
+  },
+];
+---
+
+<Layout title="TS Cards" description="Spaced-repetition practice for TypeScript.">
+  <div id="app" class="mb-40" data-cards={JSON.stringify(cards)}>
+    <div class="flex items-baseline justify-between mb-6 gap-3 flex-wrap">
+      <h1 class="text-3xl font-bold text-heading">TS Cards</h1>
+      <div class="text-sm text-gray-500" id="stats">Loading…</div>
+    </div>
+
+    <div id="card-container" class="border border-gray-200 rounded-lg p-6 min-h-[300px] flex flex-col">
+      <!-- populated by JS -->
+    </div>
+
+    <div id="controls" class="mt-4 flex flex-wrap gap-2 items-center justify-between">
+      <div class="flex gap-2 flex-wrap" id="rating-buttons" style="display: none;">
+        <button data-rating="0" class="rating-btn px-3 py-2 rounded bg-red-100 hover:bg-red-200 text-red-900 text-sm">Again <span class="text-xs opacity-60">1</span></button>
+        <button data-rating="1" class="rating-btn px-3 py-2 rounded bg-orange-100 hover:bg-orange-200 text-orange-900 text-sm">Hard <span class="text-xs opacity-60">2</span></button>
+        <button data-rating="2" class="rating-btn px-3 py-2 rounded bg-green-100 hover:bg-green-200 text-green-900 text-sm">Good <span class="text-xs opacity-60">3</span></button>
+        <button data-rating="3" class="rating-btn px-3 py-2 rounded bg-blue-100 hover:bg-blue-200 text-blue-900 text-sm">Easy <span class="text-xs opacity-60">4</span></button>
+      </div>
+      <button id="show-btn" class="px-4 py-2 rounded bg-gray-900 text-white text-sm hover:bg-gray-700">Show answer <span class="text-xs opacity-60">space</span></button>
+      <div class="flex gap-2">
+        <button id="shuffle-btn" class="text-xs text-gray-500 hover:text-gray-900 px-2">Shuffle</button>
+        <button id="reset-btn" class="text-xs text-gray-500 hover:text-gray-900 px-2">Reset progress</button>
+      </div>
+    </div>
+
+    <details class="mt-8 text-sm text-gray-600">
+      <summary class="cursor-pointer">How this works</summary>
+      <div class="mt-2 space-y-2">
+        <p>30 cards distilled from <em>Effective TypeScript</em> by Dan Vanderkam. Rate yourself after each; a lightweight SM-2 style algorithm schedules the next review.</p>
+        <p>Progress is saved to this browser only (localStorage). Different device = different progress. That's fine.</p>
+        <p>Ratings: <strong>Again</strong> = didn't know it, see again soon. <strong>Hard</strong> = struggled. <strong>Good</strong> = knew it. <strong>Easy</strong> = trivial, push back further.</p>
+      </div>
+    </details>
+  </div>
+
+  <script is:inline>
+    (function () {
+      const app = document.getElementById('app');
+      const cards = JSON.parse(app.dataset.cards);
+      const STORAGE_KEY = 'ts-cards-v1';
+
+      // SM-2ish: each card has { ef, interval, due, reps }
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        const state = {};
+        for (const c of cards) {
+          state[c.id] = { ef: 2.5, interval: 0, due: Date.now(), reps: 0 };
+        }
+        return state;
+      }
+      function saveState(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+      let state = loadState();
+
+      // Ensure new cards get seeded if we add them later
+      for (const c of cards) {
+        if (!state[c.id]) state[c.id] = { ef: 2.5, interval: 0, due: Date.now(), reps: 0 };
+      }
+
+      let currentCard = null;
+      let revealed = false;
+
+      function dueCards() {
+        const now = Date.now();
+        return cards.filter(c => state[c.id].due <= now);
+      }
+
+      function pickNext() {
+        const due = dueCards();
+        if (due.length === 0) return null;
+        // Prefer cards with fewer reps first, then earliest due
+        due.sort((a, b) => {
+          const sa = state[a.id], sb = state[b.id];
+          if (sa.reps !== sb.reps) return sa.reps - sb.reps;
+          return sa.due - sb.due;
+        });
+        // Pick from top 3 to add some variety
+        const top = due.slice(0, Math.min(3, due.length));
+        return top[Math.floor(Math.random() * top.length)];
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function renderStats() {
+        const now = Date.now();
+        const due = cards.filter(c => state[c.id].due <= now).length;
+        const learned = cards.filter(c => state[c.id].reps > 0).length;
+        document.getElementById('stats').textContent = `${due} due · ${learned}/${cards.length} learned`;
+      }
+
+      function renderCard() {
+        const container = document.getElementById('card-container');
+        const ratingBtns = document.getElementById('rating-buttons');
+        const showBtn = document.getElementById('show-btn');
+
+        if (!currentCard) {
+          currentCard = pickNext();
+        }
+
+        if (!currentCard) {
+          container.innerHTML = `
+            <div class="flex-1 flex flex-col items-center justify-center text-center">
+              <div class="text-4xl mb-2">🎉</div>
+              <div class="text-lg font-semibold mb-1">All caught up</div>
+              <div class="text-sm text-gray-500">No cards due right now. Come back later, or hit Shuffle to review anyway.</div>
+            </div>`;
+          ratingBtns.style.display = 'none';
+          showBtn.style.display = 'none';
+          return;
+        }
+
+        const c = currentCard;
+        let html = `
+          <div class="text-xs text-gray-500 mb-2">Item ${c.id} · ${escapeHtml(c.chapter)}</div>
+          <div class="text-xl font-semibold text-heading mb-4">${escapeHtml(c.title)}</div>
+        `;
+
+        if (revealed) {
+          html += `<div class="text-base mb-3"><strong>${escapeHtml(c.gist)}</strong></div>`;
+          html += `<div class="text-sm text-gray-700 mb-3 leading-relaxed">${escapeHtml(c.detail)}</div>`;
+          if (c.code) {
+            html += `<pre class="bg-gray-900 text-gray-100 text-xs p-3 rounded overflow-x-auto"><code>${escapeHtml(c.code)}</code></pre>`;
+          }
+        } else {
+          html += `<div class="text-sm text-gray-400 italic flex-1 flex items-center">What's the takeaway?</div>`;
+        }
+
+        container.innerHTML = html;
+        ratingBtns.style.display = revealed ? 'flex' : 'none';
+        showBtn.style.display = revealed ? 'none' : 'inline-block';
+      }
+
+      // SM-2 lite: rating 0-3
+      function rate(rating) {
+        const s = state[currentCard.id];
+        s.reps += 1;
+        if (rating === 0) {
+          // Again: reset interval, see in ~1 min
+          s.interval = 0;
+          s.ef = Math.max(1.3, s.ef - 0.2);
+          s.due = Date.now() + 60 * 1000;
+        } else {
+          if (s.reps === 1 || s.interval === 0) {
+            s.interval = rating === 1 ? 1 : rating === 2 ? 2 : 4; // days
+          } else {
+            const mult = rating === 1 ? 1.2 : rating === 2 ? s.ef : s.ef * 1.3;
+            s.interval = Math.max(1, Math.round(s.interval * mult));
+          }
+          if (rating === 1) s.ef = Math.max(1.3, s.ef - 0.15);
+          if (rating === 3) s.ef = s.ef + 0.15;
+          s.due = Date.now() + s.interval * 24 * 60 * 60 * 1000;
+        }
+        saveState(state);
+        currentCard = null;
+        revealed = false;
+        renderCard();
+        renderStats();
+      }
+
+      document.getElementById('show-btn').addEventListener('click', () => {
+        revealed = true;
+        renderCard();
+      });
+      document.querySelectorAll('.rating-btn').forEach(btn => {
+        btn.addEventListener('click', () => rate(parseInt(btn.dataset.rating, 10)));
+      });
+      document.getElementById('shuffle-btn').addEventListener('click', () => {
+        // Force a random card even if nothing is due
+        const c = cards[Math.floor(Math.random() * cards.length)];
+        currentCard = c;
+        revealed = false;
+        renderCard();
+      });
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        if (!confirm('Reset all progress on this device?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        state = loadState();
+        currentCard = null;
+        revealed = false;
+        renderCard();
+        renderStats();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        if (e.code === 'Space') {
+          e.preventDefault();
+          if (!revealed) { revealed = true; renderCard(); }
+        } else if (revealed && ['1','2','3','4'].includes(e.key)) {
+          rate(parseInt(e.key, 10) - 1);
+        }
+      });
+
+      renderCard();
+      renderStats();
+    })();
+  </script>
+</Layout>
