@@ -60,12 +60,17 @@ const bob = { name: 'Bob' } as Person;        // ❌ trusts you blindly`,
   {
     id: 11, chapter: "Type System",
     title: "Distinguish Excess Property Checking from Type Checking",
-    gist: "Object literals get extra-strict checks; variables don't.",
-    detail: "TS only rejects extra properties when you pass an object literal directly. Assigning through an intermediate variable skips the check. This is a lint-like feature, not a real assignability rule.",
+    gist: "Object literals get an extra strict check. Variables don't. And 'weak types' (all-optional) require at least one matching key.",
+    detail: "TS runs two separate checks. **Excess property check**: only on object literals assigned to a known type — rejects unknown keys. Assigning through an intermediate variable bypasses it (structural typing takes over). **Weak type check**: if the target type has ONLY optional properties, TS still requires at least one property to overlap — otherwise every object would be assignable. These are lint-like guardrails layered on top of the normal assignability rules; conflating them will break your mental model.",
     code: `interface Room { size: number }
-const r: Room = { size: 10, extra: 1 };       // ❌ excess property
+const r: Room = { size: 10, extra: 1 };   // ❌ excess property
 const obj = { size: 10, extra: 1 };
-const r2: Room = obj;                          // ✅ (structural)`,
+const r2: Room = obj;                     // ✅ (structural, no literal)
+
+// Weak type: all optional → needs at least one matching key
+interface Opts { a?: number; b?: number }
+const o: Opts = { c: 1 };  // ❌ no overlap with Opts
+const o2: Opts = {};       // ✅ empty is fine`,
   },
   {
     id: 13, chapter: "Type System",
@@ -477,7 +482,9 @@ Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
       }
       // Escape, then turn `foo` into <code>foo</code>
       function renderInline(s) {
-        return escapeHtml(s).replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-gray-100 text-gray-900 font-mono text-[0.9em]">$1</code>');
+        return escapeHtml(s)
+          .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-gray-100 text-gray-900 font-mono text-[0.9em]">$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       }
 
       function renderStats() {
