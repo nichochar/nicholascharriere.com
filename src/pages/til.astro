@@ -1,0 +1,56 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Today I Learned — small notes on things I discover.
+// To add an entry: prepend an object to this array. Newest is sorted to the top
+// automatically, so order here doesn't matter. `link` is optional.
+type Entry = { title: string; date: Date; note: string; link?: string };
+
+const entries: Entry[] = [
+  {
+    title: "Nomen est numen",
+    date: new Date(2026, 6, 24), // month is 0-indexed
+    note: 'A Latin phrase often rendered as "to name is to know." Literally it\'s closer to "the name is the divine power" (numen = divine will or presence) — the old idea that naming a thing gives you power over it, that to name is to comprehend. I found it while reading and wanted somewhere to keep it.',
+  },
+];
+
+const shortDate = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+const sorted = [...entries].sort((a, b) => b.date.getTime() - a.date.getTime());
+---
+
+<Layout title="TIL | Nicholas Charriere">
+  <h1 class="text-4xl mb-2 font-bold text-heading">TIL</h1>
+  <p class="mb-6 font-light text-sm text-gray-500">
+    Today I learned — small notes on things I discover.
+  </p>
+  <div class="flex flex-col divide-y divide-gray-200 mb-40">
+    {
+      sorted.map((entry) => (
+        <div class="py-6">
+          <p class="font-light text-sm text-gray-500 italic mb-1">
+            {shortDate(entry.date)}
+          </p>
+          <h2 class="text-lg font-bold text-heading mb-1">{entry.title}</h2>
+          <p>{entry.note}</p>
+          {entry.link && (
+            <p class="mt-2">
+              <a
+                href={entry.link}
+                class="text-link hover:underline"
+                target="_blank"
+              >
+                Learn more
+              </a>
+            </p>
+          )}
+        </div>
+      ))
+    }
+  </div>
+</Layout>
