@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /family/
 
 Sitemap: https://nicholascharriere.com/sitemap-index.xml

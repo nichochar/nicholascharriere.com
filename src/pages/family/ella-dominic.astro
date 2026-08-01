@@ -1,0 +1,326 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import data from "../../data/bedtime-chat-2026-07-31.json";
+
+// Private page: shared by direct link only. noindex + excluded from sitemap
+// (astro.config.mjs) + robots.txt Disallow on /family/.
+
+const BASE = "/family/ella-dominic";
+const W = 1000;
+// blocks are the star; the loudness strip below is deliberately quiet
+const BLK_Y = 10;
+const BLK_H = 44;
+const WAVE_MID = 66;
+const WAVE_HALF = 7;
+
+const { totalSec, binSec, clips, ticks, envelope } = data;
+const x = (sec: number) => (sec / totalSec) * W;
+const inClip = (sec: number) =>
+  clips.some((c) => sec >= c.start && sec < c.end);
+
+let talkPath = "";
+let quietPath = "";
+envelope.forEach((v, i) => {
+  const sec = i * binSec + binSec / 2;
+  if (sec > totalSec) return;
+  const px = x(sec).toFixed(1);
+  const h = Math.max(0.6, v * WAVE_HALF);
+  const seg = `M${px} ${(WAVE_MID - h).toFixed(1)}V${(WAVE_MID + h).toFixed(1)}`;
+  if (inClip(sec)) talkPath += seg;
+  else quietPath += seg;
+});
+
+const regions = clips.map((c, i) => {
+  const vx = x(c.start);
+  const vw = Math.max(x(c.end) - x(c.start), 4);
+  const hw = Math.max(vw, 8); // tiny clips still get a tappable hit area
+  const hx = Math.min(Math.max(vx + vw / 2 - hw / 2, 0), W - hw);
+  return { c, i, vx, vw, hx, hw };
+});
+
+const payload = JSON.stringify({ clips, totalSec, base: BASE });
+---
+
+<Layout title="Bedtime chat" description="A family recording." noindex>
+  <h1 class="text-4xl mb-2 font-bold text-heading">Bedtime chat</h1>
+  <p class="text-gray-500 italic text-sm mb-6">
+    Friday, July 31 2026 &middot; attempted bedtime: {data.startClock}
+  </p>
+
+  <p class="mb-2">
+    Ella and Dominic share a room for the first time and have a lot to share
+    before sleeping.
+  </p>
+  <p class="text-xs text-gray-400 mb-6">
+    Click a section of the night below, or just press play and let it run all
+    the way through.
+  </p>
+
+  <svg
+    id="timeline"
+    viewBox={`0 0 ${W} 96`}
+    class="w-full select-none"
+    aria-label="Timeline of the recording; each block is a clip"
+  >
+    {
+      regions.map(({ c, i, vx, vw, hx, hw }) => (
+        <g class="clip" data-i={i}>
+          <title>
+            {`clip ${c.n}${c.title ? ` · “${c.title}”` : ""} · ${c.wall} · ${c.durLabel}`}
+          </title>
+          <rect class="blk" x={vx} y={BLK_Y} width={vw} height={BLK_H} rx="4" />
+          <rect
+            class="hit"
+            x={hx}
+            y="0"
+            width={hw}
+            height="76"
+            fill="transparent"
+          />
+        </g>
+      ))
+    }
+    <path d={quietPath} stroke="#e3e6ea" stroke-width="1.1" fill="none"></path>
+    <path d={talkPath} stroke="#c5d5f1" stroke-width="1.1" fill="none"></path>
+    {
+      ticks.map((t) => (
+        <g>
+          <line
+            x1={x(t.at)}
+            y1="78"
+            x2={x(t.at)}
+            y2="82"
+            stroke="#c0c6cd"
+            stroke-width="1"
+          />
+          <text
+            x={x(t.at)}
+            y="93"
+            font-size="10"
+            fill="#9aa1a9"
+            text-anchor={x(t.at) < 25 ? "start" : x(t.at) > W - 25 ? "end" : "middle"}
+          >
+            {t.label}
+          </text>
+        </g>
+      ))
+    }
+    <line
+      id="playhead"
+      x1="0"
+      y1="4"
+      x2="0"
+      y2="76"
+      stroke="#3273dc"
+      stroke-width="1.5"
+      class="hidden"
+    />
+  </svg>
+
+  <div class="mt-4 rounded-lg border border-gray-200 p-4">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+      <div class="text-sm">
+        <span class="font-bold text-heading">
+          Clip <span id="p-num">1</span>
+        </span>
+        <span id="p-title" class="text-link"></span>
+        <span class="text-gray-500">
+          &middot; <span id="p-wall"></span> &middot; <span id="p-dur"></span> long
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          id="btn-prev"
+          class="px-2 py-1 text-sm border border-gray-300 rounded hover:border-link hover:text-link"
+        >
+          &lsaquo; prev
+        </button>
+        <button
+          id="btn-next"
+          class="px-2 py-1 text-sm border border-gray-300 rounded hover:border-link hover:text-link"
+        >
+          next &rsaquo;
+        </button>
+      </div>
+    </div>
+    <audio id="audio" controls preload="metadata" class="w-full"></audio>
+    <label
+      class="mt-2 flex items-center gap-2 text-xs text-gray-500 select-none cursor-pointer"
+    >
+      <input type="checkbox" id="autoplay" checked class="accent-link" />
+      keep playing the next clip automatically
+    </label>
+  </div>
+
+  <ol class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 list-none p-0" id="clip-list">
+    {
+      clips.map((c, i) => (
+        <li>
+          <button
+            data-i={i}
+            class="clip-row w-full flex items-baseline gap-2 py-1.5 px-2 rounded text-left hover:bg-gray-50"
+          >
+            <span class="font-mono text-xs text-gray-400 w-5 text-right shrink-0">
+              {c.n}
+            </span>
+            <span class="row-title text-sm text-heading truncate min-w-0 flex-1">
+              {c.title}
+            </span>
+            <span class="text-xs text-gray-400 shrink-0">{c.wall}</span>
+            <span class="row-check text-link text-xs w-3 shrink-0" />
+            <span class="font-mono text-xs text-gray-400 shrink-0">
+              {c.durLabel}
+            </span>
+          </button>
+        </li>
+      ))
+    }
+  </ol>
+
+  <script
+    type="application/json"
+    id="bedtime-data"
+    set:html={payload}
+  />
+</Layout>
+
+<style>
+  .clip {
+    cursor: pointer;
+  }
+  .clip .blk {
+    fill: #cddef7;
+    transition: fill 120ms ease;
+  }
+  .clip:hover .blk {
+    fill: #a5c3ee;
+  }
+  .clip.active .blk {
+    fill: #3273dc;
+  }
+  .clip.played:not(.active) .blk {
+    fill: #e4ecfa;
+  }
+  .clip-row.active {
+    background: #eef3fb;
+  }
+  .clip-row.active .row-title {
+    color: #3273dc;
+    font-weight: 700;
+  }
+  .clip-row.played:not(.active) {
+    opacity: 0.55;
+  }
+  .clip-row.played .row-check::before {
+    content: "✓";
+  }
+</style>
+
+<script>
+  type Clip = {
+    n: number;
+    file: string;
+    start: number;
+    end: number;
+    durLabel: string;
+    wall: string;
+    title: string;
+  };
+
+  function init() {
+    const dataEl = document.getElementById("bedtime-data");
+    if (!dataEl || dataEl.dataset.bound) return;
+    dataEl.dataset.bound = "1";
+
+    const { clips, totalSec, base } = JSON.parse(
+      dataEl.textContent || "{}",
+    ) as { clips: Clip[]; totalSec: number; base: string };
+
+    const audio = document.getElementById("audio") as HTMLAudioElement;
+    const playhead = document.getElementById("playhead")!;
+    const pNum = document.getElementById("p-num")!;
+    const pTitle = document.getElementById("p-title")!;
+    const pWall = document.getElementById("p-wall")!;
+    const pDur = document.getElementById("p-dur")!;
+    const autoplayBox = document.getElementById("autoplay") as HTMLInputElement;
+    const regions = Array.from(
+      document.querySelectorAll<SVGGElement>(".clip"),
+    );
+    const rows = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(".clip-row"),
+    );
+    let cur = -1;
+
+    const xOf = (sec: number) => (sec / totalSec) * 1000;
+    const movePlayhead = (sec: number) => {
+      const px = String(xOf(sec));
+      playhead.setAttribute("x1", px);
+      playhead.setAttribute("x2", px);
+    };
+
+    function select(i: number, play: boolean) {
+      const c = clips[i];
+      if (!c) return;
+      cur = i;
+      audio.src = `${base}/${c.file}`;
+      pNum.textContent = String(c.n);
+      pTitle.textContent = c.title ? `“${c.title}”` : "";
+      pWall.textContent = c.wall;
+      pDur.textContent = c.durLabel;
+      regions.forEach((el, j) => el.classList.toggle("active", j === i));
+      rows.forEach((el, j) => el.classList.toggle("active", j === i));
+      rows[i]?.scrollIntoView({ block: "nearest" });
+      playhead.classList.remove("hidden");
+      movePlayhead(c.start);
+      if (play) void audio.play();
+    }
+
+    const step = (delta: number, play = true) =>
+      select(Math.min(clips.length - 1, Math.max(0, cur + delta)), play);
+
+    regions.forEach((el) =>
+      el.addEventListener("click", () => select(Number(el.dataset.i), true)),
+    );
+    rows.forEach((el) =>
+      el.addEventListener("click", () => select(Number(el.dataset.i), true)),
+    );
+    document
+      .getElementById("btn-prev")!
+      .addEventListener("click", () => step(-1));
+    document
+      .getElementById("btn-next")!
+      .addEventListener("click", () => step(1));
+
+    audio.addEventListener("timeupdate", () => {
+      const c = clips[cur];
+      if (!c) return;
+      movePlayhead(Math.min(c.start + audio.currentTime, c.end));
+    });
+
+    audio.addEventListener("ended", () => {
+      regions[cur]?.classList.add("played");
+      rows[cur]?.classList.add("played");
+      if (autoplayBox.checked && cur < clips.length - 1) step(1);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      const tag = (document.activeElement?.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "audio") return;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        step(1);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        step(-1);
+      } else if (e.key === " " && tag !== "button") {
+        e.preventDefault();
+        if (audio.paused) void audio.play();
+        else audio.pause();
+      }
+    });
+
+    select(0, false);
+  }
+
+  document.addEventListener("astro:page-load", init);
+</script>

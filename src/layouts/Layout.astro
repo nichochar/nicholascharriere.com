@@ -4,9 +4,10 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  noindex?: boolean;
 }
 
-const { title, image } = Astro.props || { title: "Nicholas Charriere" };
+const { title, image, noindex } = Astro.props || { title: "Nicholas Charriere" };
 const { description } = Astro.props || {
   description: "The personal website of Nicholas Charriere.",
 };
@@ -17,6 +18,7 @@ const ogImage = image || "https://nicholascharriere.com/nicholas2.jpg";
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
