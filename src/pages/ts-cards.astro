@@ -396,28 +396,28 @@ Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
   <div id="app" class="mb-40" data-cards={JSON.stringify(cards)}>
     <div class="flex items-baseline justify-between mb-6 gap-3 flex-wrap">
       <h1 class="text-3xl font-bold text-heading">TS Cards</h1>
-      <div class="text-sm text-gray-500" id="stats">Loading…</div>
+      <div class="text-sm text-gray-500 dark:text-gray-400" id="stats">Loading…</div>
     </div>
 
-    <div id="card-container" class="border border-gray-200 rounded-lg p-6 min-h-[300px] flex flex-col">
+    <div id="card-container" class="border border-gray-200 dark:border-gray-700 rounded-lg p-6 min-h-[300px] flex flex-col">
       <!-- populated by JS -->
     </div>
 
     <div id="controls" class="mt-4 flex flex-wrap gap-2 items-center justify-between">
       <div class="flex gap-2 flex-wrap" id="rating-buttons" style="display: none;">
-        <button data-rating="0" class="rating-btn px-3 py-2 rounded bg-red-100 hover:bg-red-200 text-red-900 text-sm">Again <span class="text-xs opacity-60">1</span></button>
-        <button data-rating="1" class="rating-btn px-3 py-2 rounded bg-orange-100 hover:bg-orange-200 text-orange-900 text-sm">Hard <span class="text-xs opacity-60">2</span></button>
-        <button data-rating="2" class="rating-btn px-3 py-2 rounded bg-green-100 hover:bg-green-200 text-green-900 text-sm">Good <span class="text-xs opacity-60">3</span></button>
-        <button data-rating="3" class="rating-btn px-3 py-2 rounded bg-blue-100 hover:bg-blue-200 text-blue-900 text-sm">Easy <span class="text-xs opacity-60">4</span></button>
+        <button data-rating="0" class="rating-btn px-3 py-2 rounded bg-red-100 hover:bg-red-200 text-red-900 dark:bg-red-950 dark:hover:bg-red-900 dark:text-red-200 text-sm">Again <span class="text-xs opacity-60">1</span></button>
+        <button data-rating="1" class="rating-btn px-3 py-2 rounded bg-orange-100 hover:bg-orange-200 text-orange-900 dark:bg-orange-950 dark:hover:bg-orange-900 dark:text-orange-200 text-sm">Hard <span class="text-xs opacity-60">2</span></button>
+        <button data-rating="2" class="rating-btn px-3 py-2 rounded bg-green-100 hover:bg-green-200 text-green-900 dark:bg-green-950 dark:hover:bg-green-900 dark:text-green-200 text-sm">Good <span class="text-xs opacity-60">3</span></button>
+        <button data-rating="3" class="rating-btn px-3 py-2 rounded bg-blue-100 hover:bg-blue-200 text-blue-900 dark:bg-blue-950 dark:hover:bg-blue-900 dark:text-blue-200 text-sm">Easy <span class="text-xs opacity-60">4</span></button>
       </div>
-      <button id="show-btn" class="px-4 py-2 rounded bg-gray-900 text-white text-sm hover:bg-gray-700">Show answer <span class="text-xs opacity-60">space</span></button>
+      <button id="show-btn" class="px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-300 text-sm">Show answer <span class="text-xs opacity-60">space</span></button>
       <div class="flex gap-2">
-        <button id="shuffle-btn" class="text-xs text-gray-500 hover:text-gray-900 px-2">Shuffle</button>
-        <button id="reset-btn" class="text-xs text-gray-500 hover:text-gray-900 px-2">Reset progress</button>
+        <button id="shuffle-btn" class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 px-2">Shuffle</button>
+        <button id="reset-btn" class="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 px-2">Reset progress</button>
       </div>
     </div>
 
-    <details class="mt-8 text-sm text-gray-600">
+    <details class="mt-8 text-sm text-gray-600 dark:text-gray-400">
       <summary class="cursor-pointer">How this works</summary>
       <div class="mt-2 space-y-2">
         <p>30 cards distilled from <em>Effective TypeScript</em> by Dan Vanderkam. Rate yourself after each; a lightweight SM-2 style algorithm schedules the next review.</p>
@@ -483,7 +483,7 @@ Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
       // Escape, then turn `foo` into <code>foo</code>
       function renderInline(s) {
         return escapeHtml(s)
-          .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-gray-100 text-gray-900 font-mono text-[0.9em]">$1</code>')
+          .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100 font-mono text-[0.9em]">$1</code>')
           .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       }
 
@@ -506,9 +506,9 @@ Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
         if (!currentCard) {
           container.innerHTML = `
             <div class="flex-1 flex flex-col items-center justify-center text-center">
-              <div class="text-4xl mb-2">🎉</div>
+              <svg viewBox="0 0 24 24" stroke-width="1.5" fill="none" xmlns="http://www.w3.org/2000/svg" class="size-9 mb-3 text-green-600 dark:text-green-500" aria-hidden="true"><path d="M7 12.5L10 15.5L17 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <div class="text-lg font-semibold mb-1">All caught up</div>
-              <div class="text-sm text-gray-500">No cards due right now. Come back later, or hit Shuffle to review anyway.</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">No cards due right now. Come back later, or hit Shuffle to review anyway.</div>
             </div>`;
           ratingBtns.style.display = 'none';
           showBtn.style.display = 'none';
@@ -520,7 +520,7 @@ Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
         if (c.id != null) metaParts.push(`Item ${c.id}`);
         if (c.chapter) metaParts.push(escapeHtml(c.chapter));
         const meta = metaParts.length
-          ? `<div class="text-xs text-gray-500 mb-2">${metaParts.join(' · ')}</div>`
+          ? `<div class="text-xs text-gray-500 dark:text-gray-400 mb-2">${metaParts.join(' · ')}</div>`
           : '';
         let html = `
           ${meta}
@@ -529,12 +529,12 @@ Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
 
         if (revealed) {
           html += `<div class="text-base mb-3 font-semibold">${renderInline(c.gist)}</div>`;
-          html += `<div class="text-sm text-gray-700 mb-3 leading-relaxed">${renderInline(c.detail)}</div>`;
+          html += `<div class="text-sm text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">${renderInline(c.detail)}</div>`;
           if (c.code) {
             html += `<pre class="bg-gray-900 text-gray-100 text-xs p-3 rounded overflow-x-auto"><code>${escapeHtml(c.code)}</code></pre>`;
           }
         } else {
-          html += `<div class="text-sm text-gray-400 italic flex-1 flex items-center">What's the takeaway?</div>`;
+          html += `<div class="text-sm text-gray-400 dark:text-gray-500 italic flex-1 flex items-center">What's the takeaway?</div>`;
         }
 
         container.innerHTML = html;

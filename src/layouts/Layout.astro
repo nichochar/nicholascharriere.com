@@ -1,5 +1,7 @@
 ---
 import { ViewTransitions } from "astro:transitions";
+import HalfMoon from "../icons/HalfMoon.astro";
+import SunLight from "../icons/SunLight.astro";
 interface Props {
   title: string;
   description?: string;
@@ -128,10 +130,10 @@ const ogImage = image || "https://nicholascharriere.com/nicholas2.jpg";
           onclick="window.__toggleTheme && window.__toggleTheme()"
           aria-label="Toggle light and dark theme"
           title="Toggle light / dark"
-          class="ml-auto cursor-pointer border-0 bg-transparent p-0 text-base leading-none"
+          class="ml-auto cursor-pointer border-0 bg-transparent p-0 leading-none text-link hover:text-heading transition-colors"
         >
-          <span class="dark:hidden">🌙</span>
-          <span class="hidden dark:inline">☀️</span>
+          <HalfMoon class="size-[18px] dark:hidden" />
+          <SunLight class="size-[18px] hidden dark:inline" />
         </button>
       </nav>
     </header>
