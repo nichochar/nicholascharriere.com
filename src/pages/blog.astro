@@ -32,7 +32,7 @@ export const shortDate = (date: Date) => {
           (post) =>
             post.data.published && (
               <li class="flex mb-1">
-                <span class="flex-[0_0_130px] text-gray-500 italic text-sm">
+                <span class="flex-[0_0_130px] text-gray-500 dark:text-gray-400 italic text-sm">
                   {shortDate(post.data.published)}
                 </span>
                 <a href={`/blog/${post.slug}`} class="text-link hover:underline">

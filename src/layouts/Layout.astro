@@ -43,6 +43,64 @@ const ogImage = image || "https://nicholascharriere.com/nicholas2.jpg";
     /><link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="any" />
     <meta name="next-size-adjust" />
     <meta name="generator" content={Astro.generator} />
+
+    <style is:global>
+      :root {
+        --color-page: #ffffff;
+        --color-heading: #222222;
+        --color-body: #444444;
+        --color-link: #3273dc;
+      }
+      html.dark {
+        --color-page: #01242e;
+        --color-heading: #eeeeee;
+        --color-body: #dddddd;
+        --color-link: #8cc2dd;
+      }
+      html.dark a:visited {
+        color: #8b6fcb;
+      }
+    </style>
+
+    <!-- Two-state theme toggle (Verou pattern): system by default, override stored, toggling back to the OS value clears it -->
+    <script is:inline>
+      (function () {
+        function systemDark() {
+          return window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+        function apply() {
+          var stored = null;
+          try {
+            stored = localStorage.getItem("theme");
+          } catch (e) {}
+          var dark = stored === "dark" || (!stored && systemDark());
+          document.documentElement.classList.toggle("dark", dark);
+        }
+        window.__toggleTheme = function () {
+          var resolvedDark = document.documentElement.classList.contains("dark");
+          var target = resolvedDark ? "light" : "dark";
+          var sys = systemDark() ? "dark" : "light";
+          try {
+            if (target === sys) {
+              localStorage.removeItem("theme");
+            } else {
+              localStorage.setItem("theme", target);
+            }
+          } catch (e) {}
+          apply();
+        };
+        // Run before paint to avoid a flash of the wrong theme
+        apply();
+        // Follow the OS live only when no override is stored (never clears an override)
+        try {
+          window
+            .matchMedia("(prefers-color-scheme: dark)")
+            .addEventListener("change", apply);
+        } catch (e) {}
+        // Re-apply after Astro view transitions swap the document
+        document.addEventListener("astro:after-swap", apply);
+      })();
+    </script>
     <script
       is:inline
       defer
@@ -52,7 +110,7 @@ const ogImage = image || "https://nicholascharriere.com/nicholas2.jpg";
 
     <ViewTransitions />
   </head>
-  <body class="bg-white text-body max-w-[760px] mx-auto p-5 leading-normal">
+  <body class="bg-page text-body max-w-[760px] mx-auto p-5 leading-normal transition-colors">
     <header>
       <a href="/" class="no-underline hover:no-underline">
         <h1 class="text-[1.5em] text-heading font-bold">Nicholas Charriere</h1>
@@ -65,6 +123,16 @@ const ogImage = image || "https://nicholascharriere.com/nicholas2.jpg";
         <a href="/watching" class="text-link hover:underline">watching</a>
         <a href="/quotes" class="text-link hover:underline">quotes</a>
         <a href="https://x.com/nichochar" class="text-link hover:underline" target="_blank">@nichochar</a>
+        <button
+          type="button"
+          onclick="window.__toggleTheme && window.__toggleTheme()"
+          aria-label="Toggle light and dark theme"
+          title="Toggle light / dark"
+          class="ml-auto cursor-pointer border-0 bg-transparent p-0 text-base leading-none"
+        >
+          <span class="dark:hidden">🌙</span>
+          <span class="hidden dark:inline">☀️</span>
+        </button>
       </nav>
     </header>
 

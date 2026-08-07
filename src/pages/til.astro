@@ -26,14 +26,14 @@ const sorted = [...entries].sort((a, b) => b.date.getTime() - a.date.getTime());
 
 <Layout title="TIL | Nicholas Charriere">
   <h1 class="text-4xl mb-2 font-bold text-heading">TIL</h1>
-  <p class="mb-6 font-light text-sm text-gray-500">
+  <p class="mb-6 font-light text-sm text-gray-500 dark:text-gray-400">
     Today I learned — small notes on things I discover.
   </p>
   <div class="flex flex-col divide-y divide-gray-200 mb-40">
     {
       sorted.map((entry) => (
         <div class="py-6">
-          <p class="font-light text-sm text-gray-500 italic mb-1">
+          <p class="font-light text-sm text-gray-500 dark:text-gray-400 italic mb-1">
             {shortDate(entry.date)}
           </p>
           <h2 class="text-lg font-bold text-heading mb-1">{entry.title}</h2>
