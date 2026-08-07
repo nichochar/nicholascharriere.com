@@ -531,7 +531,7 @@ Object.getOwnPropertyNames(Foo.prototype) // ['constructor', 'bar']`,
           html += `<div class="text-base mb-3 font-semibold">${renderInline(c.gist)}</div>`;
           html += `<div class="text-sm text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">${renderInline(c.detail)}</div>`;
           if (c.code) {
-            html += `<pre class="bg-gray-900 text-gray-100 text-xs p-3 rounded overflow-x-auto"><code>${escapeHtml(c.code)}</code></pre>`;
+            html += `<pre class="bg-gray-900 text-gray-100 text-xs p-3 rounded overflow-x-auto border border-transparent dark:border-gray-700"><code>${escapeHtml(c.code)}</code></pre>`;
           }
         } else {
           html += `<div class="text-sm text-gray-400 dark:text-gray-500 italic flex-1 flex items-center">What's the takeaway?</div>`;
