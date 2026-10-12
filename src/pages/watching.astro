@@ -23,13 +23,45 @@ const videos = [
     source: "Jiro Dreams of Sushi",
   },
 ];
+
+const technicalTalks = [
+  {
+    title: "How always-on agents work",
+    url: "https://www.youtube.com/watch?v=L1OBRtfPS34",
+    source: "Stanford CS146S",
+  },
+  {
+    title: "The Soul of Erlang and Elixir",
+    url: "https://www.youtube.com/watch?v=JvBT4XBdoUE",
+    source: "Saša Jurić, GOTO 2019",
+  },
+];
 ---
 
 <Layout title="Worth watching | Nicholas Charriere">
   <h1 class="text-4xl mb-6 font-bold text-heading">Worth watching</h1>
-  <div class="flex flex-col divide-y divide-gray-200 mb-40">
+  <div class="flex flex-col divide-y divide-gray-200 mb-12">
     {
       videos.map((video) => (
+        <div class="py-6">
+          <a
+            href={video.url}
+            class="text-link hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {video.title}
+          </a>
+          <p class="font-light text-sm mt-1"> — {video.source}</p>
+        </div>
+      ))
+    }
+  </div>
+
+  <h2 class="text-2xl font-bold text-heading mb-2">Technical talks</h2>
+  <div class="flex flex-col divide-y divide-gray-200 mb-40">
+    {
+      technicalTalks.map((video) => (
         <div class="py-6">
           <a
             href={video.url}
