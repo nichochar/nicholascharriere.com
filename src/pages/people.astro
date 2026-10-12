@@ -1,0 +1,132 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Great people, in chronological order of birth, grouped by era.
+// `dates` is shown verbatim in parentheses. `role` is a short label.
+type Person = { name: string; dates: string; role: string };
+type Era = { name: string; span: string; people: Person[] };
+
+const eras: Era[] = [
+  {
+    name: "Antiquity",
+    span: "c. 600 BC – AD 500",
+    people: [
+      { name: "Pythagoras", dates: "c. 570 – c. 495 BC", role: "philosopher, mathematician" },
+      { name: "Confucius", dates: "551 – 479 BC", role: "philosopher" },
+      { name: "Sun Tzu", dates: "c. 544 – c. 496 BC", role: "general, strategist" },
+      { name: "Socrates", dates: "c. 470 – 399 BC", role: "philosopher" },
+      { name: "Plato", dates: "c. 428 – c. 348 BC", role: "philosopher" },
+      { name: "Aristotle", dates: "384 – 322 BC", role: "philosopher" },
+      { name: "Alexander the Great", dates: "356 – 323 BC", role: "king, conqueror" },
+      { name: "Archimedes", dates: "c. 287 – c. 212 BC", role: "mathematician, engineer" },
+      { name: "Hannibal", dates: "247 – c. 183 BC", role: "general" },
+      { name: "Julius Caesar", dates: "100 – 44 BC", role: "general, statesman" },
+      { name: "Augustus", dates: "63 BC – AD 14", role: "emperor" },
+      { name: "Seneca", dates: "c. 4 BC – AD 65", role: "philosopher" },
+      { name: "Epictetus", dates: "c. 50 – c. 135", role: "philosopher" },
+      { name: "Marcus Aurelius", dates: "121 – 180", role: "emperor, philosopher" },
+    ],
+  },
+  {
+    name: "Middle Ages",
+    span: "500 – 1450",
+    people: [
+      { name: "Charlemagne", dates: "c. 747 – 814", role: "emperor" },
+      { name: "Genghis Khan", dates: "c. 1162 – 1227", role: "conqueror" },
+      { name: "Thomas Aquinas", dates: "1225 – 1274", role: "philosopher" },
+      { name: "Joan of Arc", dates: "c. 1412 – 1431", role: "military leader" },
+    ],
+  },
+  {
+    name: "Renaissance & Scientific Revolution",
+    span: "1450 – 1700",
+    people: [
+      { name: "Leonardo da Vinci", dates: "1452 – 1519", role: "artist, inventor" },
+      { name: "Niccolò Machiavelli", dates: "1469 – 1527", role: "political philosopher" },
+      { name: "Michelangelo", dates: "1475 – 1564", role: "artist" },
+      { name: "Elizabeth I", dates: "1533 – 1603", role: "queen" },
+      { name: "Galileo Galilei", dates: "1564 – 1642", role: "scientist" },
+      { name: "René Descartes", dates: "1596 – 1650", role: "philosopher, mathematician" },
+      { name: "Blaise Pascal", dates: "1623 – 1662", role: "mathematician, philosopher" },
+      { name: "Isaac Newton", dates: "1643 – 1727", role: "physicist, mathematician" },
+      { name: "Gottfried Wilhelm Leibniz", dates: "1646 – 1716", role: "mathematician, philosopher" },
+    ],
+  },
+  {
+    name: "Enlightenment & Revolutions",
+    span: "1700 – 1800",
+    people: [
+      { name: "Benjamin Franklin", dates: "1706 – 1790", role: "inventor, statesman" },
+      { name: "Leonhard Euler", dates: "1707 – 1783", role: "mathematician" },
+      { name: "Catherine the Great", dates: "1729 – 1796", role: "empress" },
+      { name: "George Washington", dates: "1732 – 1799", role: "general, president" },
+      { name: "Joseph-Louis Lagrange", dates: "1736 – 1813", role: "mathematician" },
+      { name: "Napoleon Bonaparte", dates: "1769 – 1821", role: "emperor" },
+      { name: "Carl Friedrich Gauss", dates: "1777 – 1855", role: "mathematician" },
+    ],
+  },
+  {
+    name: "Industrial Age",
+    span: "1800 – 1870",
+    people: [
+      { name: "Abraham Lincoln", dates: "1809 – 1865", role: "president" },
+      { name: "Charles Darwin", dates: "1809 – 1882", role: "naturalist" },
+      { name: "Évariste Galois", dates: "1811 – 1832", role: "mathematician" },
+      { name: "Ada Lovelace", dates: "1815 – 1852", role: "mathematician" },
+      { name: "James Clerk Maxwell", dates: "1831 – 1879", role: "physicist" },
+      { name: "Andrew Carnegie", dates: "1835 – 1919", role: "founder" },
+      { name: "John D. Rockefeller", dates: "1839 – 1937", role: "founder" },
+      { name: "Friedrich Nietzsche", dates: "1844 – 1900", role: "philosopher" },
+      { name: "Thomas Edison", dates: "1847 – 1931", role: "inventor, founder" },
+      { name: "Henri Poincaré", dates: "1854 – 1912", role: "mathematician" },
+      { name: "Nikola Tesla", dates: "1856 – 1943", role: "inventor" },
+      { name: "Marie Curie", dates: "1867 – 1934", role: "physicist, chemist" },
+    ],
+  },
+  {
+    name: "Modern Era",
+    span: "1870 – today",
+    people: [
+      { name: "Winston Churchill", dates: "1874 – 1965", role: "statesman" },
+      { name: "Albert Einstein", dates: "1879 – 1955", role: "physicist" },
+      { name: "Emmy Noether", dates: "1882 – 1935", role: "mathematician" },
+      { name: "Niels Bohr", dates: "1885 – 1962", role: "physicist" },
+      { name: "John von Neumann", dates: "1903 – 1957", role: "mathematician" },
+      { name: "Kurt Gödel", dates: "1906 – 1978", role: "logician" },
+      { name: "Alan Turing", dates: "1912 – 1954", role: "computer scientist" },
+      { name: "Richard Hamming", dates: "1915 – 1998", role: "mathematician" },
+      { name: "Laurent Schwartz", dates: "1915 – 2002", role: "mathematician" },
+      { name: "Claude Shannon", dates: "1916 – 2001", role: "mathematician, engineer" },
+      { name: "Richard Feynman", dates: "1918 – 1988", role: "physicist" },
+      { name: "Akio Morita", dates: "1921 – 1999", role: "founder" },
+      { name: "Charlie Munger", dates: "1924 – 2023", role: "investor" },
+      { name: "John Boyd", dates: "1927 – 1997", role: "fighter pilot, strategist" },
+      { name: "Steve Jobs", dates: "1955 – 2011", role: "founder" },
+    ],
+  },
+];
+---
+
+<Layout title="Great people | Nicholas Charriere">
+  <h1 class="text-4xl mb-2 font-bold text-heading">Great people</h1>
+  <p class="mb-8 font-light text-sm text-gray-500 dark:text-gray-400">
+    People I look up to, in order of when they lived.
+  </p>
+  {
+    eras.map((era) => (
+      <section class="mb-10">
+        <h2 class="text-2xl font-bold text-heading mb-1">{era.name}</h2>
+        <p class="font-light text-sm text-gray-500 dark:text-gray-400 italic mb-3">{era.span}</p>
+        <ul class="list-disc pl-5">
+          {era.people.map((p) => (
+            <li class="mb-1">
+              <strong class="text-heading">{p.name}</strong> ({p.dates})
+              <span class="font-light text-sm text-gray-500 dark:text-gray-400"> — {p.role}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+  <div class="mb-40"></div>
+</Layout>
