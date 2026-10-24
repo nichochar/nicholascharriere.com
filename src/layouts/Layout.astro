@@ -7,6 +7,9 @@ interface Props {
   description?: string;
   image?: string;
   noindex?: boolean;
+  video?: string;
+  videoWidth?: number;
+  videoHeight?: number;
 }
 
 const { title, image, noindex } = Astro.props || { title: "Nicholas Charriere" };
@@ -14,7 +17,10 @@ const { description } = Astro.props || {
   description: "The personal website of Nicholas Charriere.",
 };
 const ogImage = image || "https://nicholascharriere.com/og.jpg?v=3";
-const ogVideo = "https://nicholascharriere.com/og.mp4?v=3";
+const { video, videoWidth, videoHeight } = Astro.props;
+const ogVideo = video || "https://nicholascharriere.com/og.mp4?v=3";
+const ogVideoWidth = video ? videoWidth || 1200 : 1200;
+const ogVideoHeight = video ? videoHeight || 630 : 630;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -44,8 +50,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:video" content={ogVideo} />
     <meta property="og:video:secure_url" content={ogVideo} />
     <meta property="og:video:type" content="video/mp4" />
-    <meta property="og:video:width" content="1200" />
-    <meta property="og:video:height" content="630" />
+    <meta property="og:video:width" content={String(ogVideoWidth)} />
+    <meta property="og:video:height" content={String(ogVideoHeight)} />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:creator" content="@nichochar" />

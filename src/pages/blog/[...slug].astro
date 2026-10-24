@@ -17,7 +17,7 @@ const { entry } = Astro.props;
 const { Content } = await entry.render();
 ---
 
-<Layout title={`${entry.data.title} | Nicholas Charriere`} image={entry.data.image}>
+<Layout title={`${entry.data.title} | Nicholas Charriere`} image={entry.data.image} video={entry.data.video} videoWidth={entry.data.videoWidth} videoHeight={entry.data.videoHeight}>
   {
     entry.data.published && (
       <Prose>

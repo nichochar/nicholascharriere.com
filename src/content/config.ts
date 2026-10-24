@@ -8,6 +8,9 @@ const blogCollection = defineCollection({
     title: z.string(),
     tags: z.array(z.string()),
     image: z.string().optional(),
+    video: z.string().optional(),
+    videoWidth: z.number().optional(),
+    videoHeight: z.number().optional(),
     hn: z.string().optional(),
     // In frontmatter, dates written without quotes around them are interpreted as Date objects
     published: z.date(),
