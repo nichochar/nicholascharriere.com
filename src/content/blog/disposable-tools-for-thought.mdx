@@ -1,0 +1,77 @@
+---
+title: "Disposable tools for thought"
+published: 2026-10-24
+tags: ["AI", "tools", "creativity", "Bret Victor"]
+slug: "disposable-tools-for-thought"
+image: "https://nicholascharriere.com/blog/disposable-tools-for-thought/paper-planes-final-poster.jpg"
+---
+
+import { Image } from "astro:assets";
+import Tweet from "../../components/Tweet.astro";
+import ideas from "../../images/disposable-tools-ideas.png";
+
+# Disposable tools for thought
+
+Today (October 2026, with Opus 5.5), building software is nearly free. This means I can explore ideas by building tools for the exploration itself.
+
+I saw a neat idea from my friend Michael on Twitter. Turns out you can use video as an open graph meta tag for websites!
+
+<Tweet url="https://x.com/pfista/status/2113288415546638515" author="Michael Pfister" handle="pfista" date="October 22, 2026">
+  this is your sign to start using og:video on your website
+</Tweet>
+
+I immediately got a tinkering itch and decided to play around with some ideas. I’m sharing my process here since it’s pretty new for me to work this way.
+
+I’m actually (finally) implementing one of my favorite ideas, Bret Victor’s principle:
+
+> _Creators need an immediate connection to what they’re creating_
+
+<figure>
+  <video class="mx-auto w-full rounded-sm" src="/blog/disposable-tools-for-thought/inventing-on-principle-mario.mp4" poster="/blog/disposable-tools-for-thought/inventing-on-principle-mario-poster.jpg" controls playsinline preload="metadata"></video>
+  <figcaption class="text-center">from one of my favorite talks: “Inventing on principle”</figcaption>
+</figure>
+
+To begin the process I need to generate ideas. I did this by starting a conversation with Claude and Grok Bot (I like to try multiple models to get varied ideas at this phase) and discuss what I’m trying to do, ask it to crawl my website, and do some mood boarding for ideas.
+
+It suggested a few things, none of which felt exactly right. Today AI rarely comes up with the perfect creative idea that I like, but it does help trigger my brain into getting other ideas!
+
+<figure>
+  <Image class="mx-auto rounded-sm" src={ideas} alt="Some ideas generated from Grok Bot" width="700" />
+  <figcaption class="text-center">some ideas generated from grok bot</figcaption>
+</figure>
+
+Out of these, I debated making an insignia or logo (could be cool), but my favorite is the Maggie Appleton one. It’s both descriptive and conveys something visually.
+
+Another proposal from Claude was a visualization of a plane flying from Paris to SF. It generated this idea from my `/about` page talking about growing up in France and later moving to SF. This is not a major story I’m trying to tell, _but_ I have always loved the minimalistic aesthetic of paper planes, and they fit my blog design quite well.
+
+At this point I’m starting to feel inspired. I have both a rough layout plan (name and short description) and a concept (paper planes).
+
+From here I proceed to brainstorm this with Claude, and this is where I introduce a very new mechanism to my exploration. I start building a custom tool which allows me to explore the idea interactively.
+
+I enter a loop where:
+
+- I iterate on the tool which gains capabilities or refines them
+- I use the tool to explore things, with real-time feedback
+- This gives me more ideas for the tool, so the loop repeats
+
+There’s something really magical about wiggling something and something wiggling back immediately. It allows my brain to explore my preferences more deeply, which leads to better outcomes. Here’s a video of me showing off the tool and this fiddling:
+
+<figure>
+  <video class="mx-auto w-full rounded-sm" src="/blog/disposable-tools-for-thought/tool-demo.mp4" poster="/blog/disposable-tools-for-thought/tool-demo-poster.jpg" controls playsinline preload="metadata"></video>
+</figure>
+
+Once I arrive at a point I am very happy with, Claude can help me export and get it all published.
+
+At this point, I also like to run the [`/explain-diff`](https://github.com/nichochar/skills/blob/master/explain-diff/SKILL.md) skill (thanks [Geoffrey Litt](https://www.geoffreylitt.com/2026/07/02/understanding-is-the-new-bottleneck.html) for this idea!) because I’m interested in how the implementation works. Turns out that reading it gave me a couple of ideas on how to improve the tracking dots, and also the idea to spawn them on mouse-click on my homepage.
+
+In the end, in a few hours, I’ve built a delightful small improvement to my personal website, learned a couple of tricks about canvas shadows, and generally had a lot of fun:
+
+<figure>
+  <video class="mx-auto w-full rounded-sm" src="/blog/disposable-tools-for-thought/paper-planes-final.mp4" poster="/blog/disposable-tools-for-thought/paper-planes-final-poster.jpg" autoplay loop muted playsinline></video>
+</figure>
+
+I love finding ways to use AI while staying in the creative loop. Building tools where I can get immediate feedback like this one helps me get into a state of flow. This makes the creative process enjoyable and rewarding.
+
+I always admired Bret Victor’s principle, but have empirically found it difficult to implement in practice. AI has greatly increased the potential of his idea. His talk was aimed at tool builders, people with months to construct environments. Now anyone with a clear goal can build their immediate-connection instrument in an afternoon.
+
+Next time you’re circling a decision, stop deliberating and build the thing that lets you feel it. Code is cheap enough that we can build disposable tools for thought.
