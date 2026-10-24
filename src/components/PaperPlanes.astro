@@ -1,5 +1,6 @@
 ---
-// One paper plane drifts across the strip below the bio and loops once per pass.
+// One paper plane flies across the strip below the bio once, when you land on the page,
+// doing a single loop-the-loop on the way.
 // Clicking anywhere on the page (outside links and buttons) throws another plane.
 // Everything is drawn on one fixed, click-through canvas, so it never affects layout.
 ---
@@ -148,7 +149,7 @@
       g.restore();
     };
 
-    /* ---- the resident plane: crosses the strip, loops once per pass ---- */
+    /* ---- the resident plane: one pass across the strip, with one loop-the-loop ---- */
     const RES_SIZE = 14;
     const resident = () => {
       const pad = 60;
@@ -159,7 +160,7 @@
       const R = (1.45 * track * w) / TAU;
       const a = (0.55 * W + pad) / track; // loop a little past the middle
       const at = (time: number): Pt & { u: number } => {
-        const u = (((time / period) % 1) + 1) % 1;
+        const u = time / period; // 0 = just off the left edge, 1 = just off the right
         let x = -pad + u * track;
         let y = 4 * Math.sin((TAU * time) / 3.1);
         if (u > a && u < a + w) {
@@ -170,7 +171,7 @@
         }
         return { x, y, u };
       };
-      return { at, track, speed };
+      return { at, track, speed, period };
     };
 
     /* ---- planes thrown by clicks ---- */
@@ -196,8 +197,10 @@
       if (thrown.length > 14) thrown.shift();
     };
 
-    let t0 = performance.now();
-    let last = t0;
+    let last = performance.now();
+    // the single pass starts shortly after the strip first comes into view
+    let flightStart: number | null = null;
+    let flightDone = false;
     let raf = 0;
     let running = false;
     let stripVisible = true;
@@ -207,12 +210,15 @@
       g.clearRect(0, 0, canvas.width, canvas.height);
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       const rect = strip.getBoundingClientRect();
-      if (rect.bottom > -60 && rect.top < H + 60) {
-        const r = resident();
-        const t = reduced ? 0.35 * (r.track / r.speed) : (now - t0) / 1000;
+      const r = resident();
+      const span = 120 / r.speed;
+      if (!reduced && flightStart !== null && !flightDone && (now - flightStart) / 1000 > r.period + span) flightDone = true;
+      const showResident = reduced || (flightStart !== null && !flightDone);
+      if (showResident && rect.bottom > -60 && rect.top < H + 60) {
+        // with reduced motion the plane just sits in the strip, mid-flight
+        const t = reduced ? 0.35 * r.period : (now - (flightStart ?? now)) / 1000;
         const baseY = rect.top + rect.height * 0.7;
         const pts: Pt[] = [];
-        const span = 120 / r.speed;
         for (let j = 0; j <= 28; j++) {
           const p = r.at(t - (j * span) / 28);
           if (pts.length && Math.abs(p.x - pts[pts.length - 1].x) > W / 2) break;
@@ -255,7 +261,8 @@
       last = now;
       update(dt);
       draw(now);
-      if (!document.hidden && (stripVisible || thrown.length)) raf = requestAnimationFrame(frame);
+      const flying = flightStart !== null && !flightDone && stripVisible;
+      if (!document.hidden && (flying || thrown.length)) raf = requestAnimationFrame(frame);
       else running = false;
     };
     const ensureRunning = () => {
@@ -301,6 +308,7 @@
     const io = new IntersectionObserver(
       (entries) => {
         stripVisible = entries.some((en) => en.isIntersecting);
+        if (stripVisible && flightStart === null && !reduced) flightStart = performance.now() + 500;
         if (stripVisible) ensureRunning();
       },
       { rootMargin: "80px" },
