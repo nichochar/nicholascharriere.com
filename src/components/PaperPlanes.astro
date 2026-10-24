@@ -1,0 +1,341 @@
+---
+// One paper plane drifts across the strip below the bio and loops once per pass.
+// Clicking anywhere on the page (outside links and buttons) throws another plane.
+// Everything is drawn on one fixed, click-through canvas, so it never affects layout.
+---
+
+<div id="plane-strip" class="mt-10 h-[110px]" aria-hidden="true"></div>
+
+<script>
+  type Pt = { x: number; y: number };
+  type Thrown = {
+    x: number;
+    y: number;
+    h: number; // heading, radians
+    v: number; // speed, px/s
+    turn: number; // gentle drift in heading, rad/s
+    s: number; // half-length, px
+    age: number;
+    dist: number;
+    loopAt: number; // seconds after launch, Infinity for no loop
+    loopDir: number;
+    flip: boolean;
+    trail: Pt[];
+  };
+
+  const TAU = Math.PI * 2;
+  const LOOP_SECONDS = 0.9;
+  // The "Line" plane from the preview video: nose at +x, about 2 units long.
+  const SIL: [number, number][] = [
+    [1, 0],
+    [-1, -0.52],
+    [-0.52, 0.06],
+    [-0.84, 0.44],
+  ];
+  const CREASE: [number, number][] = [
+    [1, 0],
+    [-0.52, 0.06],
+  ];
+
+  function hexA(hex: string, a: number): string {
+    let h = hex.replace("#", "").trim();
+    if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+    const n = parseInt(h, 16);
+    if (h.length !== 6 || Number.isNaN(n)) return `rgba(68,68,68,${a})`;
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+
+  function start(strip: HTMLElement): () => void {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    Object.assign(canvas.style, {
+      position: "fixed",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      zIndex: "20",
+    });
+    document.body.appendChild(canvas);
+    const maybeCtx = canvas.getContext("2d");
+    if (!maybeCtx) {
+      canvas.remove();
+      return () => {};
+    }
+    const g: CanvasRenderingContext2D = maybeCtx;
+
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+    let col = { page: "#ffffff", heading: "#222222", body: "#444444", dark: false };
+    const readColors = () => {
+      const cs = getComputedStyle(document.documentElement);
+      col = {
+        page: cs.getPropertyValue("--color-page").trim() || "#ffffff",
+        heading: cs.getPropertyValue("--color-heading").trim() || "#222222",
+        body: cs.getPropertyValue("--color-body").trim() || "#444444",
+        dark: document.documentElement.classList.contains("dark"),
+      };
+    };
+    readColors();
+
+    const path = (pts: [number, number][], close: boolean) => {
+      g.beginPath();
+      g.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+      if (close) g.closePath();
+    };
+
+    // Soft shadow as if the plane hovers above the page, light from the top left.
+    // The silhouette is drawn far off-canvas so only its blurred shadow lands here.
+    const shadow = (x: number, y: number, ang: number, s: number, flip: boolean, alpha: number) => {
+      const off = 10000;
+      g.save();
+      g.globalAlpha = alpha;
+      g.shadowColor = col.dark ? "rgba(0,0,0,0.55)" : "rgba(25,35,50,0.22)";
+      g.shadowBlur = 2.5 * dpr * (s / 14);
+      g.shadowOffsetX = off * dpr;
+      g.shadowOffsetY = 0;
+      g.translate(x - off, y);
+      g.rotate(ang);
+      g.scale(s, flip ? -s : s);
+      g.fillStyle = "#000";
+      path(SIL, true);
+      g.fill();
+      g.restore();
+    };
+
+    const plane = (x: number, y: number, ang: number, s: number, flip: boolean, alpha: number) => {
+      shadow(x + 0.23 * s, y + 0.46 * s, ang, s, flip, alpha);
+      g.save();
+      g.globalAlpha = alpha;
+      g.translate(x, y);
+      g.rotate(ang);
+      g.scale(s, flip ? -s : s);
+      g.lineJoin = "round";
+      g.lineCap = "round";
+      g.fillStyle = col.page;
+      path(SIL, true);
+      g.fill();
+      g.strokeStyle = col.heading;
+      g.lineWidth = 1.5 / s;
+      g.stroke();
+      path(CREASE, false);
+      g.stroke();
+      g.restore();
+    };
+
+    // pts run from the plane backwards; dashes stay fixed in space as the plane moves
+    const trail = (pts: Pt[], travelled: number, s: number, alpha: number) => {
+      if (pts.length < 2) return;
+      const cum = [0];
+      for (let j = 1; j < pts.length; j++)
+        cum.push(cum[j - 1] + Math.hypot(pts[j].x - pts[j - 1].x, pts[j].y - pts[j - 1].y));
+      g.save();
+      g.lineCap = "round";
+      g.setLineDash([6, 7]);
+      g.lineWidth = 1.6 * (s / 14);
+      const n = pts.length - 1;
+      for (let j = 0; j < n; j++) {
+        g.strokeStyle = hexA(col.body, 0.34 * (1 - j / n) * alpha);
+        g.lineDashOffset = travelled - cum[j + 1];
+        g.beginPath();
+        g.moveTo(pts[j + 1].x, pts[j + 1].y);
+        g.lineTo(pts[j].x, pts[j].y);
+        g.stroke();
+      }
+      g.restore();
+    };
+
+    /* ---- the resident plane: crosses the strip, loops once per pass ---- */
+    const RES_SIZE = 14;
+    const resident = () => {
+      const pad = 60;
+      const track = W + 2 * pad;
+      const speed = Math.min(170, Math.max(90, W / 7));
+      const period = track / speed;
+      const w = 0.9 / period; // the loop takes about 0.9 s
+      const R = (1.45 * track * w) / TAU;
+      const a = (0.55 * W + pad) / track; // loop a little past the middle
+      const at = (time: number): Pt & { u: number } => {
+        const u = (((time / period) % 1) + 1) % 1;
+        let x = -pad + u * track;
+        let y = 4 * Math.sin((TAU * time) / 3.1);
+        if (u > a && u < a + w) {
+          const q = (u - a) / w;
+          const qe = q - Math.sin(TAU * q) / TAU;
+          x += R * Math.sin(TAU * qe);
+          y -= R * (1 - Math.cos(TAU * qe));
+        }
+        return { x, y, u };
+      };
+      return { at, track, speed };
+    };
+
+    /* ---- planes thrown by clicks ---- */
+    const thrown: Thrown[] = [];
+    const launch = (x: number, y: number) => {
+      const right = Math.random() < 0.5;
+      const tilt = -0.2 + Math.random() * 0.7; // mostly level, often climbing
+      const h = right ? -tilt : Math.PI + tilt;
+      thrown.push({
+        x,
+        y,
+        h,
+        v: 170 + Math.random() * 140,
+        turn: (Math.random() - 0.5) * 0.5,
+        s: 11 + Math.random() * 6,
+        age: 0,
+        dist: 0,
+        loopAt: Math.random() < 0.45 ? 0.5 + Math.random() * 1.1 : Infinity,
+        loopDir: right ? -1 : 1,
+        flip: !right,
+        trail: [],
+      });
+      if (thrown.length > 14) thrown.shift();
+    };
+
+    let t0 = performance.now();
+    let last = t0;
+    let raf = 0;
+    let running = false;
+    let stripVisible = true;
+
+    const draw = (now: number) => {
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.clearRect(0, 0, canvas.width, canvas.height);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const rect = strip.getBoundingClientRect();
+      if (rect.bottom > -60 && rect.top < H + 60) {
+        const r = resident();
+        const t = reduced ? 0.35 * (r.track / r.speed) : (now - t0) / 1000;
+        const baseY = rect.top + rect.height * 0.7;
+        const pts: Pt[] = [];
+        const span = 120 / r.speed;
+        for (let j = 0; j <= 28; j++) {
+          const p = r.at(t - (j * span) / 28);
+          if (pts.length && Math.abs(p.x - pts[pts.length - 1].x) > W / 2) break;
+          pts.push({ x: p.x, y: baseY + p.y });
+        }
+        const head = r.at(t);
+        const ahead = r.at(t + 0.004);
+        const ang = Math.atan2(ahead.y - head.y, ahead.x - head.x);
+        trail(pts, head.u * r.track, RES_SIZE, 1);
+        plane(head.x, baseY + head.y, ang, RES_SIZE, false, 1);
+      }
+      for (const p of thrown) {
+        const alpha = Math.min(1, p.age / 0.15);
+        const grow = 0.6 + 0.4 * Math.min(1, p.age / 0.25);
+        trail(p.trail, p.dist, p.s, alpha);
+        plane(p.x, p.y, p.h, p.s * grow, p.flip, alpha);
+      }
+    };
+
+    const update = (dt: number) => {
+      for (const p of thrown) {
+        p.age += dt;
+        let dh = p.turn * dt;
+        if (p.age >= p.loopAt && p.age < p.loopAt + LOOP_SECONDS) dh += (p.loopDir * TAU * dt) / LOOP_SECONDS;
+        p.h += dh;
+        p.x += Math.cos(p.h) * p.v * dt;
+        p.y += Math.sin(p.h) * p.v * dt;
+        p.dist += p.v * dt;
+        p.trail.unshift({ x: p.x, y: p.y });
+        if (p.trail.length > 28) p.trail.pop();
+      }
+      for (let i = thrown.length - 1; i >= 0; i--) {
+        const p = thrown[i];
+        if (p.age > 0.3 && (p.x < -120 || p.x > W + 120 || p.y < -120 || p.y > H + 120)) thrown.splice(i, 1);
+      }
+    };
+
+    const frame = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      update(dt);
+      draw(now);
+      if (!document.hidden && (stripVisible || thrown.length)) raf = requestAnimationFrame(frame);
+      else running = false;
+    };
+    const ensureRunning = () => {
+      if (reduced) {
+        draw(performance.now());
+        return;
+      }
+      if (running || document.hidden) return;
+      running = true;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+
+    const resize = () => {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      draw(performance.now());
+    };
+
+    const onClick = (e: MouseEvent) => {
+      if (reduced) return;
+      const target = e.target instanceof Element ? e.target : null;
+      if (target && target.closest("a, button, input, textarea, select, label, summary, [role='button']")) return;
+      const sel = window.getSelection();
+      if (sel && sel.toString().length > 0) return;
+      launch(e.clientX, e.clientY);
+      ensureRunning();
+    };
+    const onScroll = () => {
+      if (reduced || !running) draw(performance.now());
+    };
+    const onVisibility = () => {
+      if (!document.hidden) ensureRunning();
+    };
+    const themeWatch = new MutationObserver(() => {
+      readColors();
+      if (reduced || !running) draw(performance.now());
+    });
+    themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    const io = new IntersectionObserver(
+      (entries) => {
+        stripVisible = entries.some((en) => en.isIntersecting);
+        if (stripVisible) ensureRunning();
+      },
+      { rootMargin: "80px" },
+    );
+    io.observe(strip);
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("click", onClick);
+    document.addEventListener("visibilitychange", onVisibility);
+    resize();
+    ensureRunning();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      running = false;
+      io.disconnect();
+      themeWatch.disconnect();
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("visibilitychange", onVisibility);
+      canvas.remove();
+    };
+  }
+
+  let teardown: (() => void) | null = null;
+  const stop = () => {
+    if (teardown) teardown();
+    teardown = null;
+  };
+  document.addEventListener("astro:page-load", () => {
+    stop();
+    const strip = document.getElementById("plane-strip");
+    if (strip) teardown = start(strip);
+  });
+  document.addEventListener("astro:before-swap", stop);
+</script>
