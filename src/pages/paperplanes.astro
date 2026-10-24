@@ -1,0 +1,215 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Paper planes | Nicholas Charriere"
+  description="The little tool I used to design this site's looping paper-plane link preview. Tune the planes, the flight, the trail and the shadow."
+>
+  <h1 class="text-4xl mb-6 font-bold text-heading">Paper planes</h1>
+  <p>
+    This is the tool I used to design the looping link preview for this site. Change the plane, its
+    flight, the trail and the shadow, or write your own line. The big canvas renders at the real
+    preview size, the small card shows roughly how it looks in iMessage, and every loop is seamless.
+  </p>
+
+  <div id="pp-lab" class="mt-8">
+    <div class="bar" role="toolbar" aria-label="Playback and format">
+      <div class="group">
+        <span class="lbl" id="lbl-theme">theme</span>
+        <div class="seg" role="radiogroup" aria-labelledby="lbl-theme">
+          <input type="radio" name="g-theme" id="g-theme-light" value="light" /><label for="g-theme-light">Light</label>
+          <input type="radio" name="g-theme" id="g-theme-dark" value="dark" /><label for="g-theme-dark">Dark</label>
+        </div>
+      </div>
+      <div class="group">
+        <span class="lbl" id="lbl-size">size</span>
+        <div class="seg" role="radiogroup" aria-labelledby="lbl-size">
+          <input type="radio" name="g-size" id="g-size-1200x630" value="1200x630" checked /><label for="g-size-1200x630">1200×630</label>
+          <input type="radio" name="g-size" id="g-size-1280x720" value="1280x720" /><label for="g-size-1280x720">1280×720</label>
+        </div>
+      </div>
+      <div class="group">
+        <label class="lbl" for="g-loop">loop</label><input type="range" id="g-loop" min="4" max="16" step="1" value="8" /><output id="g-loop-out" for="g-loop">8 s</output>
+      </div>
+      <div class="group grow">
+        <button type="button" id="g-play" aria-pressed="false">Pause</button><input type="range" id="g-scrub" min="0" max="1" step="0.001" value="0" aria-label="Position in loop" />
+      </div>
+      <button type="button" id="g-copy">Copy settings</button>
+      <button type="button" id="g-reset">Reset</button>
+    </div>
+    <div class="copybox" id="copybox" hidden>
+      <p class="sub">Copying was blocked here. Select this text and copy it yourself:</p>
+      <textarea id="copytext" readonly aria-label="Settings"></textarea>
+    </div>
+
+    <div class="lab">
+      <div class="grid">
+        <div class="preview" id="preview">
+          <div class="stage">
+            <canvas id="stage" width="1200" height="630" aria-label="Paper planes preview at full size"></canvas>
+            <div class="meter"><i id="meter"></i></div>
+          </div>
+          <div class="minirow">
+            <div class="cardwrap closewrap">
+              <span class="lbl">close-up</span>
+              <canvas class="closeup" id="closeup" width="540" height="300" aria-hidden="true"></canvas>
+            </div>
+            <div class="cardwrap">
+              <span class="lbl">in iMessage, about this big</span>
+              <div class="card">
+                <canvas id="mini" width="540" height="284" aria-hidden="true"></canvas>
+                <div class="meta"><b>Nicholas Charriere</b><span>nicholascharriere.com</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="side">
+          <div class="panels" id="panels"></div>
+          <details class="lines" id="linebox">
+            <summary><span class="lbl">line</span><span id="cur-line"></span></summary>
+            <div class="opts" id="lines"></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  /* Everything is scoped under #pp-lab so none of it leaks into the rest of the site. */
+  #pp-lab {
+    --page: var(--color-page);
+    --heading: var(--color-heading);
+    --body: var(--color-body);
+    --link: var(--color-link);
+    --muted: #667085;
+    --rule: #e2e7ee;
+    --panel: #f5f7fa;
+    --bubble: #e9e9eb;
+    --on-link: #ffffff;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    /* break out of the 760px text column; the header above stays aligned with the rest of the site */
+    width: min(1240px, calc(100vw - 40px));
+    margin-left: calc(50% - min(620px, 50vw - 20px));
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--body);
+  }
+  html.dark #pp-lab {
+    --muted: #8fb0ba;
+    --rule: #123f4b;
+    --panel: #03303c;
+    --bubble: #262a2e;
+    --on-link: #01242e;
+    color-scheme: dark;
+  }
+  #pp-lab *, #pp-lab *::before, #pp-lab *::after { box-sizing: border-box; }
+
+  #pp-lab .bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--page);
+    border-block: 1px solid var(--rule); padding-block: 10px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px;
+  }
+  @media (max-width: 640px) { #pp-lab .bar { position: static; } }
+  #pp-lab .group { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  #pp-lab .group.grow { flex: 1 1 220px; }
+  #pp-lab .group.grow input { flex: 1; min-width: 80px; }
+  #pp-lab .lbl { font-size: 12px; color: var(--muted); letter-spacing: .03em; }
+  #pp-lab output, #pp-lab .spec { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  #pp-lab .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; flex-wrap: wrap; }
+  #pp-lab .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  #pp-lab .seg label { padding: 3px 10px; font-size: 13px; cursor: pointer; color: var(--body); white-space: nowrap; user-select: none; }
+  #pp-lab .seg label + input + label { border-left: 1px solid var(--rule); }
+  #pp-lab .seg input:checked + label { background: var(--link); color: var(--on-link); }
+  #pp-lab .seg input:focus-visible + label { outline: 2px solid var(--link); outline-offset: -2px; }
+  #pp-lab .seg input:disabled + label { opacity: .45; cursor: default; }
+
+  #pp-lab button {
+    font: inherit; font-size: 13px; line-height: 1.4; border: 1px solid var(--rule); background: var(--panel); color: var(--heading);
+    border-radius: 6px; padding: 4px 12px; cursor: pointer;
+  }
+  #pp-lab button:hover { border-color: var(--link); }
+  #pp-lab button:focus-visible, #pp-lab input:focus-visible, #pp-lab summary:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  #pp-lab button[aria-pressed="true"] { background: var(--link); color: var(--on-link); border-color: var(--link); }
+  #pp-lab input[type="range"], #pp-lab input[type="checkbox"], #pp-lab input[type="radio"] { accent-color: var(--link); }
+  #pp-lab input[type="checkbox"] { margin: 0; }
+
+  #pp-lab .copybox { margin-top: 10px; }
+  #pp-lab .copybox textarea { width: 100%; height: 120px; font-family: var(--mono); font-size: 12px; background: var(--panel); color: var(--body); border: 1px solid var(--rule); border-radius: 6px; padding: 8px; }
+
+  #pp-lab .lab { padding-block: 24px; }
+  #pp-lab .grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+  #pp-lab .preview { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--bar-h, 0px) + 12px); align-self: start; z-index: 2; background: var(--page); display: grid; gap: 14px; min-width: 0; }
+  #pp-lab .side { display: grid; gap: 20px; min-width: 0; }
+  @media (max-width: 940px) {
+    #pp-lab .grid { grid-template-columns: minmax(0, 1fr); }
+    #pp-lab .preview { top: calc(env(safe-area-inset-top, 0px) + var(--bar-h, 0px)); padding-block: 8px; border-bottom: 1px solid var(--rule); }
+    #pp-lab .preview .minirow { display: none; }
+  }
+  @media (max-height: 760px) { #pp-lab .preview .closewrap { display: none; } }
+  #pp-lab .stage { min-width: 0; }
+  #pp-lab .stage canvas { display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--rule); background: var(--panel); }
+  #pp-lab .meter { height: 2px; background: var(--rule); margin-top: 8px; border-radius: 2px; overflow: hidden; }
+  #pp-lab .meter i { display: block; height: 100%; width: 0; background: var(--link); }
+
+  #pp-lab .panels { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+  #pp-lab .panel { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px 14px; margin: 0; display: grid; gap: 12px; min-width: 0; }
+  #pp-lab .panel legend { font-size: 12px; color: var(--muted); padding: 0 4px; }
+  #pp-lab .designs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #pp-lab .design { display: grid; gap: 4px; padding: 4px 4px 6px; border: 1px solid var(--rule); border-radius: 6px; cursor: pointer; min-width: 0; }
+  #pp-lab .design:has(input:checked) { border-color: var(--link); background: var(--panel); }
+  #pp-lab .design canvas { display: block; width: 100%; height: auto; border-radius: 4px; }
+  #pp-lab .design .nm { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--heading); padding-inline: 2px; }
+  #pp-lab .design .nm input { margin: 0; }
+
+  #pp-lab .ctl { display: grid; gap: 4px; min-width: 0; }
+  #pp-lab .ctl > .seg { justify-self: start; }
+  #pp-lab .ctl .row { display: flex; align-items: center; gap: 8px; }
+  #pp-lab .ctl input[type="range"] { flex: 1; min-width: 0; }
+  #pp-lab .ctl output { min-width: 4.4em; text-align: right; }
+  #pp-lab .ctl.off, #pp-lab .check.off { opacity: .45; }
+  #pp-lab .check { display: flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; color: var(--body); }
+  #pp-lab .btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+  #pp-lab .sub { font-size: 12px; color: var(--muted); margin: 0; }
+
+  #pp-lab details.lines { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 14px; }
+  #pp-lab details.lines summary { cursor: pointer; font-size: 13px; color: var(--heading); }
+  #pp-lab details.lines summary .lbl { margin-right: 6px; }
+  #pp-lab details.lines[open] summary { margin-bottom: 10px; }
+  #pp-lab .opts { display: grid; gap: 8px; }
+  #pp-lab .opt { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 8px; cursor: pointer; }
+  #pp-lab .opt:has(input:checked) { border-color: var(--link); background: var(--panel); }
+  #pp-lab .opt input { margin: 4px 0 0; }
+  #pp-lab .opt .txt { color: var(--heading); font-size: 14px; line-height: 1.5; }
+  #pp-lab .opt .len { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; padding-top: 2px; }
+  #pp-lab .opt input[type="text"] { width: 100%; font: inherit; font-size: 14px; color: var(--heading); background: var(--page); border: 1px solid var(--rule); border-radius: 6px; padding: 4px 8px; }
+
+  #pp-lab .cardwrap { display: grid; gap: 6px; }
+  #pp-lab .card { width: 100%; max-width: 270px; background: var(--bubble); border-radius: 18px; overflow: hidden; }
+  #pp-lab .card canvas { display: block; width: 100%; height: auto; }
+  #pp-lab .card .meta { padding: 7px 12px 9px; display: grid; font-family: var(--ui); line-height: 1.3; }
+  #pp-lab .card .meta b { color: var(--heading); font-size: 13px; font-weight: 600; }
+  #pp-lab .card .meta span { color: var(--muted); font-size: 12px; }
+  #pp-lab .minirow { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; min-width: 0; }
+  #pp-lab .minirow .card { width: 250px; max-width: 100%; }
+  #pp-lab .closeup { width: 200px; max-width: 100%; border: 1px solid var(--rule); border-radius: 8px; display: block; height: auto; }
+</style>
+
+<script>
+  import { mountLab } from "../scripts/paperplanes-lab.js";
+
+  let teardown: (() => void) | null = null;
+  const stop = () => {
+    if (teardown) teardown();
+    teardown = null;
+  };
+  document.addEventListener("astro:page-load", () => {
+    stop();
+    const root = document.getElementById("pp-lab");
+    if (root) teardown = mountLab(root);
+  });
+  document.addEventListener("astro:before-swap", stop);
+</script>

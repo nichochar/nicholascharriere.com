@@ -32,6 +32,7 @@ ${postLines}
 - [Home](${SITE}/): intro and links
 - [Blog](${SITE}/blog): all writing
 - [Projects](${SITE}/projects): projects and side work
+- [Paper planes](${SITE}/paperplanes): interactive tool for designing the site's looping link-preview video
 - [Reading](${SITE}/reading): books and reading list
 - [Quotes](${SITE}/quotes): collected quotes
 - [TIL](${SITE}/til): today-I-learned notes
