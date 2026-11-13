@@ -12,7 +12,7 @@ interface Props {
   videoHeight?: number;
 }
 
-const DEFAULT_DESCRIPTION = "The personal website of Nicholas Charriere.";
+const DEFAULT_DESCRIPTION = "My personal space on the world wide web. Blog, books, fav quotes, etc.";
 const { title = "Nicholas Charriere", image, noindex } = Astro.props;
 const description = Astro.props.description?.trim() || DEFAULT_DESCRIPTION;
 const ogImage = image || "https://nicholascharriere.com/og.jpg?v=4";
