@@ -12,13 +12,12 @@ interface Props {
   videoHeight?: number;
 }
 
-const { title, image, noindex } = Astro.props || { title: "Nicholas Charriere" };
-const { description } = Astro.props || {
-  description: "The personal website of Nicholas Charriere.",
-};
-const ogImage = image || "https://nicholascharriere.com/og.jpg?v=3";
+const DEFAULT_DESCRIPTION = "The personal website of Nicholas Charriere.";
+const { title = "Nicholas Charriere", image, noindex } = Astro.props;
+const description = Astro.props.description?.trim() || DEFAULT_DESCRIPTION;
+const ogImage = image || "https://nicholascharriere.com/og.jpg?v=4";
 const { video, videoWidth, videoHeight } = Astro.props;
-const ogVideo = video || "https://nicholascharriere.com/og.mp4?v=3";
+const ogVideo = video || "https://nicholascharriere.com/og.mp4?v=4";
 const ogVideoWidth = video ? videoWidth || 1200 : 1200;
 const ogVideoHeight = video ? videoHeight || 630 : 630;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
