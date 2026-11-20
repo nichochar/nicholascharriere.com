@@ -1,2 +1,6 @@
 # Prefer naked domain (matches astro.config site + sitemap)
 https://www.nicholascharriere.com/* https://nicholascharriere.com/:splat 301
+
+# Consultation form
+/consult https://seemly-lipstick-301.notion.site/d9df800eaa504234a170dba6140662c5 302
+/consult/ https://seemly-lipstick-301.notion.site/d9df800eaa504234a170dba6140662c5 302
