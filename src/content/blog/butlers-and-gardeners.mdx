@@ -1,0 +1,146 @@
+---
+title: "Butlers and gardeners"
+published: 2026-11-22
+tags: ["AI", "agents"]
+slug: "butlers-and-gardeners"
+description: "AI agents are splitting into two types: butlers, which serve one person, and gardeners, which tend a shared space."
+image: "https://nicholascharriere.com/og-butlers-and-gardeners.png"
+---
+
+import { Image } from "astro:assets";
+import butlers from "../../images/butlers.png";
+import gardenerButler from "../../images/gardener-butler.png";
+import manyButlers from "../../images/many-butlers.png";
+import curatorAgent from "../../images/curator-agent.png";
+import vercelBoard from "../../images/vercel-board.png";
+
+# Butlers and gardeners
+
+AI agents are splitting into two types: **butlers**, which serve one person, and **gardeners**, which tend a shared space. Both are while loops with tools against a goal, so they look the same. They aren't, and confusing them gets you this:
+
+_The tweet that was here in the Notion draft could not be exported. Add the link here._
+
+Pretty much everyone agrees with this, and I think I know why: an app can’t be a butler. A butler is attached to a person, so it has to span all of that person’s apps. But that’s only half the picture, and the other half is the type of agents that apps should build.
+
+## Butlers serve a person
+
+Starting with OpenClaw, we saw an explosion of the category. Grok Bot, Muse, Duet, Dot, these are all butlers. They are both hyper generalist in what tasks they can do, and at the same time highly personalized to the individual user they are attached to. They fit a person: you.
+
+<figure>
+  <Image class="mx-auto rounded-sm" src={butlers} alt="A butler serves one person: you." width="700" />
+  <figcaption class="text-center">A butler serves one person: you.</figcaption>
+</figure>
+
+Their job is to understand you, your problems, your tasks, your job. They remember your preferences, adapt to your expectations, work in your preferred style. They spend their tokens to solve your problems in the way that you like.
+
+It turns out that a lot of knowledge work is butler work. When you work you have a goal, break it down into tasks, and then do some work to produce artifacts like a code PR, a slide deck, a doc, etc. You might share this artifact and collaborate on it later, but the process building up to these artifacts is private and personalized. This is the kind of work butlers do.
+
+Butlers are inherently one-player. That’s what makes them useful, and it also makes them easier to build. Single-player UX is significantly less challenging than multiplayer, so it makes sense that the industry mastered that category first.
+
+This is also [a big prize](https://nicholascharriere.com/blog/the-great-convergence/), so the labs are all pushing for it hard, and I think this category is theirs. Their single-player subscription tiers offer tokens that are significantly more subsidized than their API pricing for larger teams. It is designed for individuals, just like butlers are.
+
+## Gardeners tend a place
+
+But not all tokens are butler tokens.
+
+There is another category, one which doesn’t attach itself to a person, but rather is responsible for a _place_. I think of this category as **the gardeners**.
+
+<Image
+  class="mx-auto rounded-sm"
+  src={gardenerButler}
+  alt="A butler tends a person (the user); a gardener tends a place (the garden)."
+  width="700"
+/>
+
+A garden is a shared space which outlives the people working in it: a codebase, a CRM, a company brain.
+
+It requires long term planning which goes beyond butler timelines. Weeds need to be removed, different sections deserve attention at different points in time. This is not the job of any one person, which means it's not the job of any one butler either.
+
+Here's a simple test: when a person leaves the company, does the agent leave with them? Gardeners stay with the ground while butlers come and go.
+
+|  | Butler | Gardener |
+| --- | --- | --- |
+| Answers to | One person | A shared space |
+| When the person leaves | Goes with them | Stays |
+| Remembers | Your preferences | Institutional memory |
+| Time horizon | The task | Long term upkeep |
+| Maintained by | An individual | A team |
+| Feels like paying for | Labor | Outcomes for your data |
+
+## Code got there first
+
+Developers now each have their own coding agent, set up the way they like it. Kind of like they used to have their IDE and preferred way of debugging and approaching coding. These agents are butlers. But they all work in the same _repo_, which will outlive all of them.
+
+Some agents are responsible for the repository and shared across users: these are gardeners. A good example is a code review bot like Greptile.
+
+<figure>
+  <Image class="mx-auto rounded-sm" src={manyButlers} alt="Four developers, four butlers, one shared repo." width="700" />
+  <figcaption class="text-center">Four developers, four butlers, one shared repo.</figcaption>
+</figure>
+
+The pull request is the interesting part. It's a butler saying "this is what I intend to change", and then the garden's own process decides whether it gets in. This is why you can have 10 coding agents working on the same repo without it falling apart.
+
+Say an engineer on your team builds strong workflows specific to the repo. You'd want those shared. Some people call this a factory. I care less about the name than about whether it's shared or personal. What they're building is a gardener, [tending to the garden](https://x.com/poteto/status/2090546476464451907) of their repo.
+
+## Butlers shouldn't garden
+
+This model explains a few things:
+
+An app can't be a butler. But it also goes the other way around: butlers shouldn’t garden.
+
+Harrison Chase [wrote about this recently](https://x.com/hwchase17/status/2124181216719151585) (he calls gardeners "curator agents"):
+
+> "Asking agents - who are mainly trying to accomplish their own goals - to properly update and maintain this knowledge will cause it to become unruly and full of contradictions."
+
+A butler might notice a weed, but I don't think it will take responsibility for the weeding. Instead of having 10 butlers maintaining the garden independently, you can have one gardener take care of it. It is both more efficient and more reliable.
+
+A butler is only as good as the garden it works in. If the wiki is stale or the database is messy, even the best model will give you bad answers. Gardening is high impact: it gives other agents leverage which compounds.
+
+A lot of people are wondering what’s going to happen to the SaaS category. That’s a larger question, but a common fear is that they just become headless and butlers rip through them 24/7. I don’t believe this scales. I think that as the number of butlers goes from 10s to 100s to 1000s, we’ll start realizing that we want to think about our garden as decoupled, protected, and autonomous.
+
+Finally, they get bought differently. Butlers are bought per token, for individuals. Gardeners are AI powered workflows happening at scale and connected to company accounts, they feels more like paying for quality outcomes and guarantees for your data, rather than paying for labor tokens for your workforce.
+
+## The next garden is company knowledge
+
+The same thing is now happening to the rest of knowledge work. Harrison’s curator agent is one version of it, an agent running in the background whose job is to keep a company's knowledge up to date, so that everyone's butlers can use it.
+
+<figure>
+  <Image class="mx-auto rounded-sm" src={curatorAgent} alt="The curator agent keeps the knowledge store current for every other agent." width="700" />
+  <figcaption class="text-center">The curator agent keeps the knowledge store current for every other agent. Source: [Harrison Chase](https://x.com/hwchase17/status/2124181216719151585)</figcaption>
+</figure>
+
+I work at Notion, so this is the garden I think about the most: your company's context, its institutional memory, its brain.
+
+The context of a company is a very complex, living thing. It outlives most employees and their butlers. Gardeners here look like:
+
+- a wiki that updates itself
+- an agent that monitors database changes and validates that things are typed correctly and up to date
+- meeting note skills which evolve based on signals from the surrounding context
+
+Here’s an interesting question: what if some butlers are using low-intelligence/cheap models which could damage the quality of your knowledge base, which in turn affects every single other agent using it? How do you defend against this?
+
+I recommend reading Harrison’s knowledge factories piece which goes into bigger detail [Harrison Chase on Twitter / X](https://x.com/hwchase17/status/2124181216719151585).
+
+## What comes next
+
+As butlers become swarms of butlers, we won't want them all changing shared spaces directly. Code already has an answer: the pull request.
+
+My prediction is that agent-to-agent communication protocols will evolve. Instead of having MCPs with CRUD APIs, we’ll move to intent-based messages:
+
+- On the read side: "this is my intent, give me relevant context."
+- On the write side: "here's the semantic change I'm trying to make."
+
+But only the gardener will have final say on whether the change happens and what exactly it should be, given the rules of the garden.
+
+We’re seeing lots of new ideas in the space, like Vercel’s [recent board](https://x.com/vercel/status/2123234769236619673) product (forums, feeds and channels are emerging new techniques to get swarms to communicate among themselves).
+
+<figure>
+  <Image class="mx-auto rounded-sm" src={vercelBoard} alt="Agents claim tasks and post their work as replies." width="700" />
+  <figcaption class="text-center">Agents claim tasks and post their work as replies. Source: [Vercel](https://x.com/vercel/status/2123234769236619673)</figcaption>
+</figure>
+
+So yes, bring your own agent to use my thing. It just has to ask my gardener first.
+
+---
+
+If you're building or using an agent, ask who it answers to: a person or a place?
