@@ -20,6 +20,7 @@ const id = `sub-${placement}`;
 
 <section class:list={["sub", `sub-${placement}`]} data-sub aria-labelledby={`${id}-h`}>
   <h2 id={`${id}-h`} class="sub-title">Get new essays by email</h2>
+  <p class="sub-copy">A few times a year, when there’s something new.</p>
   <div class="sub-stack">
     <form
       class="sub-form"
@@ -78,7 +79,8 @@ const id = `sub-${placement}`;
   .sub-post { margin-top: 3rem; margin-bottom: 1rem; }
   .sub-index { margin: -0.5rem 0 1.75rem; }
 
-  .sub-title { margin: 0 0 0.5rem; font: inherit; font-weight: 700; color: var(--color-heading); }
+  .sub-title { margin: 0; font: inherit; font-weight: 700; color: var(--color-heading); }
+  .sub-copy { margin: 0.1rem 0 0.5rem; color: var(--sub-muted); }
 
   /* Form row and success line share one grid cell: crossfade without a layout jump */
   .sub-stack { display: grid; }
