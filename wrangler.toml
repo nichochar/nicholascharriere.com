@@ -1,0 +1,13 @@
+# For D1 migrations and local dev only (`wrangler d1 migrations apply`, `wrangler d1 execute`).
+# Deploys are Git-integrated Cloudflare Pages (build `npm run build`, output `dist`, set in the
+# dashboard). Deployed preview + production get the `DB` binding from the Pages project settings.
+# Do NOT add `pages_build_output_dir` here: it would make this file the source of truth for
+# Pages config and can change how Git deploys behave.
+name = "nicholascharriere-com"
+compatibility_date = "2026-08-08"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nicholascharriere-subscribers"
+database_id = "a14e9bcc-f3d7-4eee-9592-af3b59a2afd9"
+migrations_dir = "migrations"

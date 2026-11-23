@@ -1,10 +1,14 @@
 ---
-// Newsletter subscribe card. Shown after every blog post and under the H1 on /blog.
-// Provider lives in src/config/newsletter.ts.
+// Compact newsletter card. Shown after every blog post and under the H1 on /blog.
+// Submits JSON `{ email, source_path, website }` to the same-origin Pages Function
+// (functions/api/subscribe.ts → D1). Config: src/config/newsletter.ts.
 //
-// No provider configured (`action` is ""): render title, copy and the RSS line only.
-// No form, no email field, no button, so nothing looks submittable and nothing can
-// post to a broken URL. Once `action` is set, the real form renders and posts there.
+// `data-astro-reload` keeps the <ViewTransitions /> router (Layout.astro) from hijacking
+// the submit and navigating to /api/subscribe; the script below handles it via fetch.
+// The listener is delegated on `document`, so it survives view-transition page swaps.
+//
+// `website` is a honeypot: visually hidden, skipped by keyboard and screen readers.
+// Bots that fill it are rejected server-side. Do not remove it.
 import { newsletter } from "../config/newsletter";
 
 interface Props {
@@ -12,139 +16,185 @@ interface Props {
 }
 const { placement } = Astro.props;
 const id = `sub-${placement}`;
-const hasProvider = newsletter.action.trim() !== "";
-const copy =
-  placement === "index"
-    ? "One email when something new is out. Nothing else."
-    : "I write one of these every so often. One email when the next one is out, nothing else.";
 ---
 
 <section class:list={["sub", `sub-${placement}`]} data-sub aria-labelledby={`${id}-h`}>
-  <h2 id={`${id}-h`} class="sub-title">Get new essays by email</h2>
-  {
-    hasProvider ? (
-      <div class="sub-stack">
-        <div>
-          <p class="sub-copy">{copy}</p>
-          <form class="sub-form" action={newsletter.action} method="post" data-sub-form>
-            <label for={id} class="sr-only">Email address</label>
-            <input
-              id={id}
-              class="sub-input"
-              type="email"
-              name={newsletter.emailField}
-              placeholder="you@example.com"
-              autocomplete="email"
-              required
-            />
-            <button type="submit" class="sub-btn">Subscribe</button>
-          </form>
-          <p class="sub-fine">
-            Or follow via <a href="/rss.xml">RSS</a>.
-          </p>
-        </div>
-        <p class="sub-done" aria-live="polite">You'll get new essays by email.</p>
+  <div class="sub-head">
+    <h2 id={`${id}-h`} class="sub-title">Get new essays by email</h2>
+    <p class="sub-copy">One email when a new one is out.</p>
+  </div>
+  <div class="sub-stack">
+    <form
+      class="sub-form"
+      action={newsletter.endpoint}
+      method="post"
+      novalidate
+      data-astro-reload
+      data-sub-form
+      data-honeypot={newsletter.honeypotField}
+    >
+      <label for={id} class="sr-only">Email address</label>
+      <input
+        id={id}
+        class="sub-input"
+        type="email"
+        name="email"
+        placeholder="you@example.com"
+        autocomplete="email"
+        maxlength="254"
+        required
+        aria-describedby={`${id}-err`}
+      />
+      <button type="submit" class="sub-btn">Subscribe</button>
+      <span class="sub-rss">or <a href="/rss.xml">RSS</a></span>
+      <div class="sub-hp" aria-hidden="true">
+        <label for={`${id}-hp`}>Website</label>
+        <input id={`${id}-hp`} type="text" name={newsletter.honeypotField} tabindex="-1" autocomplete="off" />
       </div>
-    ) : (
-      <>
-        <p class="sub-copy">{copy}</p>
-        <p class="sub-fine">
-          Or follow via <a href="/rss.xml">RSS</a>.
-        </p>
-      </>
-    )
-  }
+    </form>
+    <p class="sub-done" aria-live="polite"></p>
+  </div>
+  <p id={`${id}-err`} class="sub-err" aria-live="polite"></p>
 </section>
 
 <style>
   .sub {
     --sub-line: color-mix(in srgb, var(--color-body) 16%, transparent);
-    --sub-line-strong: color-mix(in srgb, var(--color-body) 30%, transparent);
+    --sub-line-strong: color-mix(in srgb, var(--color-body) 28%, transparent);
     --sub-surface: color-mix(in srgb, var(--color-body) 3%, var(--color-page));
     --sub-field: var(--color-page);
-    font-size: 0.95rem;
+    --sub-muted: color-mix(in srgb, var(--color-body) 72%, transparent);
+    max-width: 30rem;
+    font-size: 0.875rem;
+    line-height: 1.45;
     color: var(--color-body);
-    line-height: 1.6;
     background: var(--sub-surface);
     border: 1px solid var(--sub-line);
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem 1.1rem;
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
   }
   :global(html.dark) .sub {
     --sub-line: color-mix(in srgb, #ffffff 13%, transparent);
-    --sub-line-strong: color-mix(in srgb, #ffffff 26%, transparent);
+    --sub-line-strong: color-mix(in srgb, #ffffff 24%, transparent);
     --sub-surface: color-mix(in srgb, #ffffff 4%, var(--color-page));
     --sub-field: color-mix(in srgb, #000000 18%, var(--color-page));
   }
-  .sub-post { margin-top: 3.5rem; margin-bottom: 1rem; }
-  .sub-index { margin: -0.25rem 0 2.25rem; }
+  .sub-post { margin-top: 3rem; margin-bottom: 1rem; }
+  .sub-index { margin: -0.5rem 0 1.75rem; }
 
   .sub a { color: var(--color-link); text-decoration: none; }
   .sub a:hover { text-decoration: underline; }
-  .sub-title { margin: 0 0 0.25rem; font: inherit; font-size: 1rem; font-weight: 700; color: var(--color-heading); }
-  .sub-copy { margin: 0.1rem 0 0.9rem; color: var(--color-body); }
-  .sub-fine { margin: 0.7rem 0 0; font-size: 0.8rem; color: color-mix(in srgb, var(--color-body) 75%, transparent); }
-  /* Without a form, the copy line sits directly above the RSS line */
-  .sub > .sub-copy { margin-bottom: 0; }
 
-  /* Form and success line share one grid cell so they crossfade without a layout jump */
+  .sub-head { margin: 0 0 0.5rem; display: flex; flex-wrap: wrap; column-gap: 0.4rem; align-items: baseline; }
+  .sub-title { margin: 0; font: inherit; font-weight: 700; color: var(--color-heading); }
+  .sub-copy { margin: 0; color: var(--sub-muted); }
+
+  /* Form row and success line share one grid cell: crossfade without a layout jump */
   .sub-stack { display: grid; }
-  .sub-stack > * { min-width: 0; grid-area: 1 / 1; transition: opacity 300ms ease, transform 300ms ease; }
-  .sub-done { margin: 0; align-self: center; opacity: 0; transform: translateY(4px); pointer-events: none; color: var(--color-heading); }
-  .sub.is-done .sub-stack > :not(.sub-done) {
-    opacity: 0; transform: translateY(-4px); pointer-events: none; visibility: hidden;
-    transition: opacity 300ms ease, transform 300ms ease, visibility 0s 300ms;
+  .sub-stack > * { grid-area: 1 / 1; min-width: 0; transition: opacity 300ms ease; }
+  .sub-done { margin: 0; align-self: center; opacity: 0; pointer-events: none; color: var(--color-heading); }
+  .sub.is-done .sub-form {
+    opacity: 0; pointer-events: none; visibility: hidden;
+    transition: opacity 300ms ease, visibility 0s 300ms;
   }
-  .sub.is-done .sub-done { opacity: 1; transform: none; pointer-events: auto; }
+  .sub.is-done .sub-done { opacity: 1; pointer-events: auto; }
 
-  .sub-form { margin: 0; display: flex; gap: 0.5rem; max-width: 30rem; }
+  .sub-form { position: relative; margin: 0; display: flex; align-items: center; gap: 0.4rem; }
   .sub-input {
-    font: inherit; font-size: 0.9rem; color: var(--color-heading);
-    flex: 1 1 0; width: 100%; min-width: 0; padding: 0.5rem 0.75rem; border-radius: 8px;
+    font: inherit; color: var(--color-heading);
+    flex: 1 1 0; width: 100%; min-width: 0;
+    padding: 0.3rem 0.55rem; border-radius: 6px;
     background: var(--sub-field); border: 1px solid var(--sub-line-strong); outline: none;
     transition: border-color 160ms ease, box-shadow 160ms ease;
   }
   .sub-input::placeholder { color: var(--color-body); opacity: 0.5; }
-  .sub-input:focus { border-color: var(--color-link); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-link) 18%, transparent); }
+  .sub-input:focus { border-color: var(--color-link); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-link) 20%, transparent); }
+  .sub-input[aria-invalid="true"] { border-color: color-mix(in srgb, #c0392b 55%, var(--sub-line-strong)); }
   .sub-btn {
-    font: inherit; font-size: 0.9rem; cursor: pointer; flex: none;
-    padding: 0.5rem 1rem; border-radius: 8px;
+    font: inherit; cursor: pointer; flex: none;
+    padding: 0.3rem 0.75rem; border-radius: 6px;
     color: var(--color-heading); background: var(--sub-field);
     border: 1px solid var(--sub-line-strong);
     transition: border-color 160ms ease, color 160ms ease;
   }
   .sub-btn:hover { border-color: var(--color-link); color: var(--color-link); }
-  .sub-btn:disabled { cursor: progress; }
+  .sub-btn:disabled { cursor: progress; opacity: 0.6; }
   .sub button:focus-visible, .sub a:focus-visible { outline: 2px solid var(--color-link); outline-offset: 2px; }
+  .sub-rss { flex: none; font-size: 0.8rem; color: var(--sub-muted); }
+
+  .sub-err { margin: 0; font-size: 0.8rem; color: var(--sub-muted); }
+  .sub-err:not(:empty) { margin-top: 0.35rem; }
+
+  /* Honeypot: off-screen and clipped (not display:none, which some bots skip) */
+  .sub-hp {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+  }
 
   @media (max-width: 560px) {
-    .sub { padding: 1.1rem; }
-    .sub-form { flex-direction: column; }
-    .sub-input { flex: none; }
-    .sub-btn { align-self: flex-start; }
+    .sub { max-width: none; }
+    .sub-form { flex-wrap: wrap; }
+    .sub-input { flex: 1 1 100%; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sub-stack > *, .sub.is-done .sub-stack > :not(.sub-done), .sub-input, .sub-btn { transition: none; }
+    .sub-stack > *, .sub.is-done .sub-form, .sub-input, .sub-btn { transition: none; }
   }
 </style>
 
 <script>
-  // Only present in the DOM when a provider is configured. Sends the same FormData the
-  // native form would, then crossfades to the success line. `no-cors` because providers'
-  // embed endpoints don't send CORS headers: the POST still goes out, the response is just
-  // opaque. A network failure rejects, in which case the form stays visible.
+  const MSG = {
+    done: "You'll get new essays by email.",
+    invalid: "That email doesn't look right.",
+    limited: "Too many tries. Give it a few minutes.",
+    failed: "Couldn't subscribe. Try again.",
+  };
+  const looksLikeEmail = (s: string) => s.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
   document.addEventListener("submit", async (e) => {
     const form = e.target;
     if (!(form instanceof HTMLFormElement) || !form.matches("[data-sub-form]")) return;
     e.preventDefault();
+    const card = form.closest<HTMLElement>("[data-sub]");
+    const input = form.querySelector<HTMLInputElement>('input[name="email"]');
     const button = form.querySelector("button");
-    if (button) button.disabled = true;
+    const err = card?.querySelector(".sub-err");
+    const done = card?.querySelector(".sub-done");
+    if (!card || !input || !button || !err || !done) return;
+
+    const honeypotName = form.dataset.honeypot || "website";
+    const honeypot = form.querySelector<HTMLInputElement>(`input[name="${honeypotName}"]`);
+    const email = input.value.trim();
+    const showError = (msg: string, invalid = false) => {
+      err.textContent = msg;
+      input.setAttribute("aria-invalid", String(invalid));
+    };
+
+    if (!looksLikeEmail(email)) return showError(MSG.invalid, true);
+    showError("");
+    button.disabled = true;
     try {
-      await fetch(form.action, { method: "POST", body: new FormData(form), mode: "no-cors" });
-      form.closest("[data-sub]")?.classList.add("is-done");
+      const res = await fetch(form.action, {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json" },
+        body: JSON.stringify({
+          email,
+          source_path: location.pathname,
+          [honeypotName]: honeypot?.value ?? "",
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.ok === true) {
+        done.textContent = MSG.done;
+        card.classList.add("is-done");
+        return;
+      }
+      if (data?.error === "invalid_email") showError(MSG.invalid, true);
+      else if (res.status === 429) showError(MSG.limited);
+      else showError(MSG.failed);
     } catch {
-      if (button) button.disabled = false;
+      showError(MSG.failed);
     }
+    button.disabled = false;
   });
 </script>

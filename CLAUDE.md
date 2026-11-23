@@ -53,3 +53,4 @@ The site is a static build hosted on **Cloudflare Pages** (the old DigitalOcean 
 - Build command: `npm run build` · output directory: `dist` · production branch: `main`.
 - **To deploy: just push to `main`.** Cloudflare Pages auto-builds and deploys. No SSH, no manual build step, no server.
 - Custom domains: apex `nicholascharriere.com` + `www`.
+- `functions/` (Pages Functions, e.g. `/api/subscribe` → D1 binding `DB`) deploys with the same push. `wrangler.toml` is only for D1 migrations; see `AGENTS.md`.

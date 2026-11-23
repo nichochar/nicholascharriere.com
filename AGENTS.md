@@ -74,15 +74,60 @@ can't be represented reasonably in the feed, handle it in `rss.xml.js`
 - Component: `src/components/SubscribeCta.astro`. Rendered at the end of every
   post (`src/pages/blog/[...slug].astro`, after the body and the optional HN
   line, wrapped in `not-prose`) and on `/blog` under the H1 (`src/pages/blog.astro`).
-- Provider config: `src/config/newsletter.ts`. Set `action` to the provider's
-  form-post URL (and `emailField` if it doesn't use `email`, e.g. Kit's
-  `email_address`) to enable the email form. No embed scripts or iframes.
-- While `action` is `""`, the card renders title + copy + "Or follow via RSS"
-  only: no `<form>`, no email field, no button. Nothing looks submittable and
-  nothing posts to a broken URL, so it is safe to ship before choosing a provider.
-- With a provider, submit goes through `fetch` (same FormData, `mode: "no-cors"`)
-  and only after the request is sent does the card crossfade to the success line.
-  On network failure the form stays visible.
+  It is a compact card (max-width ~30rem, left-aligned): headline + one short
+  line, an inline email field + Subscribe button, and "or RSS" (`/rss.xml`).
+- The form is **always shown**. The client `fetch`es `POST /api/subscribe`
+  (same-origin, JSON `{ email, source_path, website }`, no `no-cors`) and only
+  crossfades to the success line on a `{ ok: true }` response. Errors show
+  inline and the form stays usable. Config: `src/config/newsletter.ts`.
+- The form has `data-astro-reload` so the `<ViewTransitions />` router in
+  `Layout.astro` doesn't take over the submit and navigate to the JSON endpoint.
+  Keep it.
+- **Honeypot:** the hidden `website` input (clipped off-screen, `tabindex="-1"`,
+  `aria-hidden` wrapper) is intentional bot protection. Don't "clean it up".
+  The function rejects any request where it is non-empty (400 `rejected`, no insert).
+  The name is set in both `src/config/newsletter.ts` and `HONEYPOT_FIELD` in the function.
+
+### Storage: Pages Function + D1
+
+- Function: `functions/api/subscribe.ts` (Pages Functions convention, so it
+  serves `/api/subscribe`). `functions/` sits at the repo root and is not part
+  of the Astro build. Pages picks it up on deploy. `npm run build` typechecks
+  it with `tsc -p functions` (`@cloudflare/workers-types`), and the root
+  `tsconfig.json` excludes it from `astro check`.
+- Database: D1 `nicholascharriere-subscribers`
+  (id `a14e9bcc-f3d7-4eee-9592-af3b59a2afd9`), table `subscribers`
+  (`id`, `email` UNIQUE, `created_at`, `source_path`, `user_agent`, `country`),
+  plus `rate_limits` (8 requests / 10 min per SHA-256-hashed IP).
+- Binding: `DB`, already set on Pages project `nicholascharriere-com` for both
+  preview and production (dashboard → Settings → Bindings). Nothing to turn on
+  per deploy.
+- Schema changes are new files in `migrations/` applied with
+  `npx wrangler d1 migrations apply nicholascharriere-subscribers --remote`.
+  `wrangler.toml` exists only for D1 migrations and local dev. Do **not** add
+  `pages_build_output_dir` to it, because this is a Git-integrated Pages project
+  configured in the dashboard.
+- **Never add a public endpoint that lists or exports emails.**
+
+### Exporting subscribers (CLI only)
+
+Needs wrangler auth (`npx wrangler login` or a `CLOUDFLARE_API_TOKEN` in your env, never in the repo):
+
+```sh
+npx wrangler d1 execute nicholascharriere-subscribers --remote --json \
+  --command "SELECT email, created_at, source_path, country FROM subscribers ORDER BY created_at" \
+  | jq -r '.[0].results | (["email","created_at","source_path","country"] | @csv), (.[] | [.email, .created_at, .source_path, .country] | @csv)' \
+  > subscribers.csv
+```
+
+Without jq, pipe the same `--json` output to:
+
+```sh
+python3 -c 'import sys,json,csv; r=json.load(sys.stdin)[0]["results"]; w=csv.DictWriter(sys.stdout,["email","created_at","source_path","country"],extrasaction="ignore"); w.writeheader(); w.writerows(r)' > subscribers.csv
+```
+
+Count only: `npx wrangler d1 execute nicholascharriere-subscribers --remote --command "SELECT COUNT(*) FROM subscribers"`.
+Don't commit `subscribers.csv`.
 
 ## Dates
 
