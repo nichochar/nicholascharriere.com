@@ -29,6 +29,10 @@ Why: `@astrojs/sitemap` (see `astro.config.mjs`) already emits `sitemap-index.xm
 
 If you add a new content collection or new top-level pages, update `src/pages/llms.txt.ts` so they show up in the index.
 
+### RSS feed
+
+`/rss.xml` (`src/pages/rss.xml.js`) also feeds RSS-to-email; see `AGENTS.md` for the email-safe HTML / absolute-URL rules and how to verify them.
+
 ### Styling
 
 Custom Tailwind theme in `tailwind.config.mjs`:
