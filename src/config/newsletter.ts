@@ -1,10 +1,10 @@
 // Config for the subscribe card (src/components/SubscribeCta.astro).
 //
-// By default the card POSTs JSON to the same-origin Cloudflare Pages Function at
-// functions/api/subscribe.ts, which stores addresses in D1 (binding `DB`).
-// If a provider (Buttondown / Kit) is adopted later, it would be swapped in here,
-// but note the client and function contract (JSON body, `{ ok: true }` response)
-// would need to change with it.
+// The card POSTs JSON to the same-origin Cloudflare Pages Function at
+// functions/api/subscribe.ts. The function writes each signup to D1 (binding `DB`,
+// the backup) and then forwards it to Buttondown via the API, using the
+// `BUTTONDOWN_API_KEY` Pages secret. The browser never talks to Buttondown directly,
+// so the form contract (JSON body, `{ ok: true }` response) stays the same.
 export const newsletter = {
   // Same-origin endpoint the form submits to.
   endpoint: "/api/subscribe",

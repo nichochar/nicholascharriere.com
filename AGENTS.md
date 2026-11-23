@@ -110,9 +110,44 @@ can't be represented reasonably in the feed, handle it in `rss.xml.js`
   configured in the dashboard.
 - **Never add a public endpoint that lists or exports emails.**
 
-### Exporting subscribers (CLI only)
+### Buttondown (primary list) + D1 (backup)
 
-Needs wrangler auth (`npx wrangler login` or a `CLOUDFLARE_API_TOKEN` in your env, never in the repo):
+- Signups go to **Buttondown** (newsletter username `nichochar`) **and** to D1
+  as a backup. The form still posts to `/api/subscribe`; the function is what
+  talks to Buttondown (`POST https://api.buttondown.com/v1/subscribers`). It
+  writes D1 first, then Buttondown, so a Buttondown outage never blocks the backup.
+- Double opt-in is Buttondown's default (subscriber starts `unactivated` and gets
+  a confirmation email). Don't bypass it: no `type`, no
+  `X-Buttondown-Bypass-Firewall`, no `X-Buttondown-Collision-Behavior: overwrite`.
+- "Already subscribed" errors from Buttondown (400/409 with `email_already_exists`
+  or similar) count as success.
+- If Buttondown is down, times out (8s), or the secret is missing, the function
+  still saves to D1 and returns `{ ok: true }`; it logs the Buttondown failure
+  (status + short code, never the key or the email).
+- Secret: encrypted Cloudflare Pages secret `BUTTONDOWN_API_KEY`, already set on
+  project `nicholascharriere-com` for both preview and production. Read in the
+  function as `env.BUTTONDOWN_API_KEY`. Never commit it or put it in
+  `wrangler.toml`. To rotate:
+
+  ```sh
+  # pipe the value; do not echo it
+  printf '%s' "$BUTTONDOWN_API_KEY" | npx wrangler pages secret put BUTTONDOWN_API_KEY --project-name nicholascharriere-com
+  printf '%s' "$BUTTONDOWN_API_KEY" | npx wrangler pages secret put BUTTONDOWN_API_KEY --project-name nicholascharriere-com --env preview
+  ```
+
+  Wrangler warns about `pages_build_output_dir` missing from `wrangler.toml`;
+  ignore it, do not add that field. A new Pages deployment is required before a
+  changed secret is picked up.
+
+### Exporting subscribers
+
+**From Buttondown (the primary list):** in the Buttondown dashboard, open the
+Subscribers tab and click Export (no need to select everyone). You get a CSV
+(id, email, subscriber_type, referrer_url, dates, metadata, etc.). If it takes a
+while, Buttondown emails the file.
+
+**From D1 (the backup, CLI only)**, for when Buttondown is unavailable or you
+want a local copy. Needs wrangler auth (`npx wrangler login` or a `CLOUDFLARE_API_TOKEN` in your env, never in the repo):
 
 ```sh
 npx wrangler d1 execute nicholascharriere-subscribers --remote --json \
