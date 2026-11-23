@@ -74,8 +74,9 @@ can't be represented reasonably in the feed, handle it in `rss.xml.js`
 - Component: `src/components/SubscribeCta.astro`. Rendered at the end of every
   post (`src/pages/blog/[...slug].astro`, after the body and the optional HN
   line, wrapped in `not-prose`) and on `/blog` under the H1 (`src/pages/blog.astro`).
-  It is a compact card (max-width ~30rem, left-aligned): headline + one short
-  line, an inline email field + Subscribe button, and "or RSS" (`/rss.xml`).
+  It is a compact card (max-width ~30rem, left-aligned): a headline and an
+  inline email field + Subscribe button on one row. RSS is not in the card; it
+  is a quiet "RSS" link (`/rss.xml`) at the bottom of the `/blog` list.
 - The form is **always shown**. The client `fetch`es `POST /api/subscribe`
   (same-origin, JSON `{ email, source_path, website }`, no `no-cors`) and only
   crossfades to the success line on a `{ ok: true }` response. Errors show
