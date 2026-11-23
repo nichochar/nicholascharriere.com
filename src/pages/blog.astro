@@ -1,21 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import SubscribeCta from "../components/SubscribeCta.astro";
+import { formatDate } from "../lib/formatDate";
 const allBlogPosts = await getCollection("blog", ({ data }) => {
   return data.published;
 });
-
-export const shortDate = (date: Date) => {
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
 ---
 
 <Layout title="Blog | Nicholas Charriere">
   <h1 class="text-4xl mb-6 font-bold text-heading">Blog</h1>
+  <SubscribeCta placement="index" />
 
   <ul class="list-none p-0">
     {
@@ -33,7 +28,7 @@ export const shortDate = (date: Date) => {
             post.data.published && (
               <li class="flex mb-1">
                 <span class="flex-[0_0_130px] text-gray-500 dark:text-gray-400 italic text-sm">
-                  {shortDate(post.data.published)}
+                  {formatDate(post.data.published)}
                 </span>
                 <a href={`/blog/${post.slug}`} class="text-link hover:underline">
                   {post.data.title}

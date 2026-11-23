@@ -68,3 +68,27 @@ outside `src/images/`, or new embedded media, check that the feed still renders
 it as email-safe HTML with absolute URLs (run the checks above). If a component
 can't be represented reasonably in the feed, handle it in `rss.xml.js`
 (convert it to plain HTML or a link) and update this section.
+
+## Newsletter subscribe card
+
+- Component: `src/components/SubscribeCta.astro`. Rendered at the end of every
+  post (`src/pages/blog/[...slug].astro`, after the body and the optional HN
+  line, wrapped in `not-prose`) and on `/blog` under the H1 (`src/pages/blog.astro`).
+- Provider config: `src/config/newsletter.ts`. Set `action` to the provider's
+  form-post URL (and `emailField` if it doesn't use `email`, e.g. Kit's
+  `email_address`) to enable the email form. No embed scripts or iframes.
+- While `action` is `""`, the card renders title + copy + "Or follow via RSS"
+  only: no `<form>`, no email field, no button. Nothing looks submittable and
+  nothing posts to a broken URL, so it is safe to ship before choosing a provider.
+- With a provider, submit goes through `fetch` (same FormData, `mode: "no-cors"`)
+  and only after the request is sent does the card crossfade to the success line.
+  On network failure the form stays visible.
+
+## Dates
+
+Content calendar dates must be formatted in **UTC** with `formatDate` from
+`src/lib/formatDate.ts`. YAML date-only frontmatter (`published: 2026-11-22`)
+is parsed as UTC midnight, so formatting in local time shows the previous day
+in US timezones. Hand-built dates (e.g. TIL entries) use `new Date(Date.UTC(y, m, d))`.
+Machine dates (`toISOString().slice(0, 10)` in llms.txt / `.md` endpoints, RSS
+`pubDate`) are already UTC.

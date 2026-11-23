@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import Prose from "../../components/Prose.astro";
+import SubscribeCta from "../../components/SubscribeCta.astro";
 
 export async function getStaticPaths() {
   const publishedBlogEntries = await getCollection("blog", ({ data }) => {
@@ -46,6 +47,7 @@ const description = entry.data.description || summarize(entry.body);
             <a href={entry.data.hn}>Discuss on Hacker News</a>
           </p>
         )}
+        <div class="not-prose"><SubscribeCta placement="post" /></div>
       </Prose>
     )
   }
