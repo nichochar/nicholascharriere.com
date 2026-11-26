@@ -121,7 +121,7 @@ can't be represented reasonably in the feed, handle it in `rss.xml.js`
   1. `POST /subscribers` with `{ email_address, state: "inactive" }`. This is an
      upsert; an existing subscriber keeps their state (a confirmed reader stays
      confirmed).
-  2. `POST /forms/10240384/subscribers` with `{ email_address, referrer }`
+  2. `POST /forms/10248774/subscribers` with `{ email_address, referrer }`
      (`referrer` = origin + source path, omitted when there is none). Skipped if
      step 1 failed.
 - Double opt-in comes from the Kit form (`KIT_FORM_ID` in the function): the

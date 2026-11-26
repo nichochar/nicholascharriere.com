@@ -26,7 +26,7 @@ const RATE_WINDOW_SECONDS = 600; // …per 10-minute fixed window, per IP
 
 const KIT_API_BASE = "https://api.kit.com/v4";
 // Kit double opt-in form (not a secret); adding a subscriber to it sends the confirmation email.
-const KIT_FORM_ID = 10240384;
+const KIT_FORM_ID = 10248774;
 const KIT_TIMEOUT_MS = 8000;
 
 const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]+$/;
