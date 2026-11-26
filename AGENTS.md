@@ -7,7 +7,7 @@ touching blog content or the feed.
 ## RSS feed (`/rss.xml`) — it is also the newsletter
 
 The feed at `/rss.xml` is implemented in `src/pages/rss.xml.js`. It is consumed
-by **feed readers and by RSS-to-email** (Buttondown / Kit), so each item's
+by **feed readers and by RSS-to-email** (e.g. Kit), so each item's
 `content:encoded` must be **self-contained, email-safe HTML**: full post content,
 no scripts or JS, and every URL absolute (`https://nicholascharriere.com/…`)
 and pointing at a real static file in the build. Emails are opened long after
@@ -110,29 +110,37 @@ can't be represented reasonably in the feed, handle it in `rss.xml.js`
   configured in the dashboard.
 - **Never add a public endpoint that lists or exports emails.**
 
-### Buttondown (primary list) + D1 (backup)
+### Kit (primary list) + D1 (backup)
 
-- Signups go to **Buttondown** (newsletter username `nichochar`) **and** to D1
-  as a backup. The form still posts to `/api/subscribe`; the function is what
-  talks to Buttondown (`POST https://api.buttondown.com/v1/subscribers`). It
-  writes D1 first, then Buttondown, so a Buttondown outage never blocks the backup.
-- Double opt-in is Buttondown's default (subscriber starts `unactivated` and gets
-  a confirmation email). Don't bypass it: no `type`, no
-  `X-Buttondown-Bypass-Firewall`, no `X-Buttondown-Collision-Behavior: overwrite`.
-- "Already subscribed" errors from Buttondown (400/409 with `email_already_exists`
-  or similar) count as success.
-- If Buttondown is down, times out (8s), or the secret is missing, the function
-  still saves to D1 and returns `{ ok: true }`; it logs the Buttondown failure
-  (status + short code, never the key or the email).
-- Secret: encrypted Cloudflare Pages secret `BUTTONDOWN_API_KEY`, already set on
-  project `nicholascharriere-com` for both preview and production. Read in the
-  function as `env.BUTTONDOWN_API_KEY`. Never commit it or put it in
+- Signups go to **Kit** (kit.com, formerly ConvertKit) **and** to D1 as a
+  backup. The form still posts to `/api/subscribe`; the function is what talks
+  to Kit (API v4, base `https://api.kit.com/v4`, auth header
+  `X-Kit-Api-Key`, not `Authorization`). It writes D1 first, then Kit, so a
+  Kit outage never blocks the backup.
+- Two calls, in this order:
+  1. `POST /subscribers` with `{ email_address, state: "inactive" }`. This is an
+     upsert; an existing subscriber keeps their state (a confirmed reader stays
+     confirmed).
+  2. `POST /forms/10240384/subscribers` with `{ email_address, referrer }`
+     (`referrer` = origin + source path, omitted when there is none). Skipped if
+     step 1 failed.
+- Double opt-in comes from the Kit form (`KIT_FORM_ID` in the function): the
+  subscriber starts `inactive` (unconfirmed) and the form sends the confirmation
+  email on step 2. Don't bypass it: never create subscribers as `active`.
+- The welcome sequence is attached to the form **in Kit** (a Rule: "subscribes to
+  a form" → "subscribe to sequence"), not in code.
+- If Kit is down, times out (8s), or the secret is missing, the function still
+  saves to D1 and returns `{ ok: true }`; it logs the Kit failure (status +
+  short message, never the key or the email).
+- Secret: encrypted Cloudflare Pages secret `KIT_API_KEY` (a Kit v4 API key),
+  set on project `nicholascharriere-com` for both preview and production. Read
+  in the function as `env.KIT_API_KEY`. Never commit it or put it in
   `wrangler.toml`. To rotate:
 
   ```sh
   # pipe the value; do not echo it
-  printf '%s' "$BUTTONDOWN_API_KEY" | npx wrangler pages secret put BUTTONDOWN_API_KEY --project-name nicholascharriere-com
-  printf '%s' "$BUTTONDOWN_API_KEY" | npx wrangler pages secret put BUTTONDOWN_API_KEY --project-name nicholascharriere-com --env preview
+  printf '%s' "$KIT_API_KEY" | npx wrangler pages secret put KIT_API_KEY --project-name nicholascharriere-com
+  printf '%s' "$KIT_API_KEY" | npx wrangler pages secret put KIT_API_KEY --project-name nicholascharriere-com --env preview
   ```
 
   Wrangler warns about `pages_build_output_dir` missing from `wrangler.toml`;
@@ -141,12 +149,10 @@ can't be represented reasonably in the feed, handle it in `rss.xml.js`
 
 ### Exporting subscribers
 
-**From Buttondown (the primary list):** in the Buttondown dashboard, open the
-Subscribers tab and click Export (no need to select everyone). You get a CSV
-(id, email, subscriber_type, referrer_url, dates, metadata, etc.). If it takes a
-while, Buttondown emails the file.
+**From Kit (the primary list):** in the Kit dashboard, go to Grow → Subscribers
+and click Export. You get a CSV of subscribers (email, state, dates, etc.).
 
-**From D1 (the backup, CLI only)**, for when Buttondown is unavailable or you
+**From D1 (the backup, CLI only)**, for when Kit is unavailable or you
 want a local copy. Needs wrangler auth (`npx wrangler login` or a `CLOUDFLARE_API_TOKEN` in your env, never in the repo):
 
 ```sh

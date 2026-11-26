@@ -1,7 +1,7 @@
 // POST /api/subscribe — stores newsletter signups in D1 (binding `DB`) and, when the
-// `BUTTONDOWN_API_KEY` Pages secret is present, also creates them as Buttondown subscribers
-// (default double opt-in). D1 is written first and is the backup: a Buttondown failure or a
-// missing secret is logged but still returns `{ ok: true }`, because the signup is saved.
+// `KIT_API_KEY` Pages secret is present, also adds them to Kit (API v4) via the double opt-in
+// form, which sends the confirmation email. D1 is written first and is the backup: a Kit failure
+// or a missing secret is logged but still returns `{ ok: true }`, because the signup is saved.
 // Pages Functions convention: functions/api/subscribe.ts → /api/subscribe.
 // Schema: migrations/0001_subscribers.sql. Client: src/components/SubscribeCta.astro.
 //
@@ -12,7 +12,7 @@
 export interface Env {
   DB: D1Database;
   /** Encrypted Pages secret. Optional so local dev without it still works. */
-  BUTTONDOWN_API_KEY?: string;
+  KIT_API_KEY?: string;
 }
 
 /** Honeypot input name. Must match `honeypotField` in src/config/newsletter.ts. */
@@ -24,8 +24,10 @@ const MAX_UA_LEN = 512;
 const RATE_LIMIT = 8; // requests…
 const RATE_WINDOW_SECONDS = 600; // …per 10-minute fixed window, per IP
 
-const BUTTONDOWN_SUBSCRIBERS_URL = "https://api.buttondown.com/v1/subscribers";
-const BUTTONDOWN_TIMEOUT_MS = 8000;
+const KIT_API_BASE = "https://api.kit.com/v4";
+// Kit double opt-in form (not a secret); adding a subscriber to it sends the confirmation email.
+const KIT_FORM_ID = 10240384;
+const KIT_TIMEOUT_MS = 8000;
 
 const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]+$/;
 const PATH_RE = /^\/[A-Za-z0-9\-._~/%]*$/;
@@ -45,15 +47,6 @@ function clientIp(request: Request): string {
   const xff = request.headers.get("X-Forwarded-For");
   if (xff) return xff.split(",")[0].trim();
   return "unknown";
-}
-
-const IPV4_RE = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
-const IPV6_RE = /^[0-9A-Fa-f:.]+$/;
-
-/** True for a plausible IPv4/IPv6 literal (never "unknown"). */
-function isRealIp(ip: string): boolean {
-  if (IPV4_RE.test(ip)) return true;
-  return ip.includes(":") && ip.length <= 45 && IPV6_RE.test(ip);
 }
 
 async function sha256Hex(s: string): Promise<string> {
@@ -169,57 +162,31 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return fail("server_error", 500);
   }
 
-  await forwardToButtondown(env, request, email, sourcePath);
+  await forwardToKit(env, request, email, sourcePath);
   return json({ ok: true });
 };
 
-/** Buttondown's "this address already exists" errors (400/409). Treated as success. */
-function isAlreadySubscribed(status: number, body: unknown): boolean {
-  if (status !== 400 && status !== 409) return false;
-  if (!body || typeof body !== "object") return false;
-  const { code, detail } = body as { code?: unknown; detail?: unknown };
-  const text = `${typeof code === "string" ? code : ""} ${typeof detail === "string" ? detail : ""}`.toLowerCase();
-  return /email_already_exists|already_exists|subscriber_exists|already/.test(text);
-}
-
-/**
- * Create the subscriber in Buttondown. Never throws and never affects the response:
- * D1 already holds the signup, so failures are only logged (status + short code, no email, no key).
- */
-async function forwardToButtondown(env: Env, request: Request, email: string, sourcePath: string | null): Promise<void> {
-  const apiKey = env.BUTTONDOWN_API_KEY?.trim();
-  if (!apiKey) {
-    console.error("subscribe: BUTTONDOWN_API_KEY not set; saved to D1 only");
-    return;
-  }
-
-  const payload: Record<string, unknown> = { email_address: email };
-  if (sourcePath) {
-    payload.referrer_url = `${new URL(request.url).origin}${sourcePath}`;
-    payload.metadata = { source_path: sourcePath };
-  }
-  const ip = clientIp(request);
-  if (isRealIp(ip)) payload.ip_address = ip;
-
+/** POST JSON to a Kit v4 endpoint. Returns true on 2xx. Never throws; logs failures without the email or key. */
+async function kitPost(apiKey: string, path: string, payload: Record<string, unknown>, step: string): Promise<boolean> {
   let res: Response;
   try {
-    res = await fetch(BUTTONDOWN_SUBSCRIBERS_URL, {
+    res = await fetch(`${KIT_API_BASE}${path}`, {
       method: "POST",
       headers: {
-        Authorization: `Token ${apiKey}`,
+        "X-Kit-Api-Key": apiKey,
         "Content-Type": "application/json",
         Accept: "application/json",
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(BUTTONDOWN_TIMEOUT_MS),
+      signal: AbortSignal.timeout(KIT_TIMEOUT_MS),
     });
   } catch (err) {
     const name = err instanceof Error ? err.name : "unknown";
-    console.error(`subscribe: buttondown request failed (${name})`);
-    return;
+    console.error(`subscribe: kit ${step} request failed (${name})`);
+    return false;
   }
 
-  if (res.status === 201 || res.status === 200) return;
+  if (res.ok) return true;
 
   let body: unknown = null;
   try {
@@ -227,14 +194,37 @@ async function forwardToButtondown(env: Env, request: Request, email: string, so
   } catch {
     // Non-JSON error body; fall through with null.
   }
-  if (isAlreadySubscribed(res.status, body)) return;
+  // Kit errors look like `{ "errors": ["..."] }`.
+  const errors = body && typeof body === "object" ? (body as { errors?: unknown }).errors : undefined;
+  const first = Array.isArray(errors) ? errors.find((e): e is string => typeof e === "string") : undefined;
+  // Messages can echo the address back; strip anything email-shaped and cap the length.
+  const short = (first ?? "").replace(/[^\s@]+@[^\s@]+/g, "[email]").slice(0, 120);
+  console.error(`subscribe: kit ${step} error status=${res.status} ${short}`.trim());
+  return false;
+}
 
-  const { code, detail } = (body && typeof body === "object" ? body : {}) as { code?: unknown; detail?: unknown };
-  // Detail can echo the address back; strip anything email-shaped and cap the length.
-  const short = (typeof code === "string" ? code : typeof detail === "string" ? detail : "")
-    .replace(/[^\s@]+@[^\s@]+/g, "[email]")
-    .slice(0, 120);
-  console.error(`subscribe: buttondown error status=${res.status} ${short}`.trim());
+/**
+ * Add the signup to Kit. Never throws and never affects the response:
+ * D1 already holds the signup, so failures are only logged (status + short message, no email, no key).
+ *
+ * 1. Upsert the subscriber as `inactive` (unconfirmed). Existing subscribers keep their state,
+ *    so a confirmed reader stays confirmed.
+ * 2. Add them to the double opt-in form, which is what sends the confirmation email.
+ *    Skipped if step 1 failed.
+ */
+async function forwardToKit(env: Env, request: Request, email: string, sourcePath: string | null): Promise<void> {
+  const apiKey = env.KIT_API_KEY?.trim();
+  if (!apiKey) {
+    console.error("subscribe: KIT_API_KEY not set; saved to D1 only");
+    return;
+  }
+
+  const created = await kitPost(apiKey, "/subscribers", { email_address: email, state: "inactive" }, "subscriber");
+  if (!created) return;
+
+  const formPayload: Record<string, unknown> = { email_address: email };
+  if (sourcePath) formPayload.referrer = `${new URL(request.url).origin}${sourcePath}`;
+  await kitPost(apiKey, `/forms/${KIT_FORM_ID}/subscribers`, formPayload, "form");
 }
 
 // Anything other than POST (onRequestPost takes precedence for POST).
