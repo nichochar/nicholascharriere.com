@@ -1,0 +1,21 @@
+---
+// Newsletter confirmation landing page (linked from the confirmation email).
+// Noindexed and kept out of the sitemap (astro.config.mjs). This is the only place
+// that sets `nc_subscribed`; /blog uses it to swap its subscribe card (SubscribeCta.astro).
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="You're in | Nicholas Charriere" noindex>
+  <h1 class="text-4xl mb-6 font-bold text-heading">You're in.</h1>
+  <p>
+    Thanks for confirming. When I write something new, it'll land in your inbox.
+  </p>
+  <p class="pt-6">
+    In the meantime, <a class="text-link hover:underline" href="/blog/">the blog</a> has everything so far.
+  </p>
+  <script is:inline>
+    try {
+      localStorage.setItem("nc_subscribed", "1");
+    } catch (e) {}
+  </script>
+</Layout>

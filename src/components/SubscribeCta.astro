@@ -7,6 +7,10 @@
 // the submit and navigating to /api/subscribe; the script below handles it via fetch.
 // The listener is delegated on `document`, so it survives view-transition page swaps.
 //
+// On /blog (placement="index") only, confirmed subscribers see a small "You're subscribed"
+// card instead. Layout.astro sets `html.nc-subscribed` before paint from localStorage
+// `nc_subscribed` (set only by /subscribed/). No JS / no storage: the form shows as usual.
+//
 // `website` is a honeypot: visually hidden, skipped by keyboard and screen readers.
 // Bots that fill it are rejected server-side. Do not remove it.
 import { newsletter } from "../config/newsletter";
@@ -53,6 +57,7 @@ const id = `sub-${placement}`;
   </div>
   <p id={`${id}-err`} class="sub-err" aria-live="polite"></p>
 </section>
+{placement === "index" && <p class="sub sub-index sub-ok">You’re subscribed. Thanks!</p>}
 
 <style>
   .sub {
@@ -78,6 +83,11 @@ const id = `sub-${placement}`;
   }
   .sub-post { margin-top: 3rem; margin-bottom: 1rem; }
   .sub-index { margin: -0.5rem 0 1.75rem; }
+
+  /* /blog only: swap the form card for a confirmation card (class set in Layout.astro) */
+  .sub-ok { display: none; color: var(--color-heading); }
+  :global(html.nc-subscribed) .sub-index[data-sub] { display: none; }
+  :global(html.nc-subscribed) .sub-ok { display: block; }
 
   .sub-title { margin: 0; font: inherit; font-weight: 700; color: var(--color-heading); }
   .sub-copy { margin: 0.1rem 0 0.5rem; color: var(--sub-muted); }

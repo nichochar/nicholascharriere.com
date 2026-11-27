@@ -126,6 +126,20 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         document.addEventListener("astro:after-swap", apply);
       })();
     </script>
+    <!-- Confirmed subscribers (flag set only by /subscribed/): lets the /blog card swap before paint -->
+    <script is:inline>
+      (function () {
+        function apply() {
+          var on = false;
+          try {
+            on = localStorage.getItem("nc_subscribed") === "1";
+          } catch (e) {}
+          document.documentElement.classList.toggle("nc-subscribed", on);
+        }
+        apply();
+        document.addEventListener("astro:after-swap", apply);
+      })();
+    </script>
     <script
       is:inline
       defer

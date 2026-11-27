@@ -34,8 +34,9 @@ export default defineConfig({
   integrations: [
     tailwind(),
     mdx(),
-    // /family/* pages are private, shared by direct link only — keep them out of the sitemap
-    sitemap({ filter: (page) => !page.includes("/family/") }),
+    // /family/* pages are private, shared by direct link only — keep them out of the sitemap.
+    // /subscribed/ is the newsletter confirmation landing page — same treatment.
+    sitemap({ filter: (page) => !page.includes("/family/") && !page.includes("/subscribed/") }),
     stableImages(),
   ],
 });
